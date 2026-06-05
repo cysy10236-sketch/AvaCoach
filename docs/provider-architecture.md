@@ -29,6 +29,7 @@ This keeps `client` simple: it does not care whether the backend used OpenAI, De
 The LLM provider is independent from Spatius.
 
 ```text
+Question Source -> AI Generated or IT Question Bank
 LLM Provider -> replyText / feedback / report
 TTS Provider -> audio
 Spatius Avatar SDK -> digital human rendering and driving
@@ -151,3 +152,33 @@ Only a new provider adapter is needed as long as it returns the same interview J
 Provider-based LLM design keeps the product resilient. The interview demo can run in low-cost, high-quality, offline-like, or fallback modes without changing the UI.
 
 It also keeps the Spatius integration cleaner. The avatar layer does not need to know which LLM provider generated the reply; it only needs the final text/audio and state events.
+
+## Question Bank Provider Layer
+
+AvaCoach now has a local structured IT question bank for demo training.
+
+The question bank stores:
+
+- role
+- topic
+- difficulty
+- question
+- expectedPoints
+- followUps
+- tags
+- source and sourceNote
+
+Current seed coverage:
+
+- frontend
+- backend
+- ai
+- behavioral
+
+The bank is not a scraped or mirrored external dataset. It is manually structured demo seed data inspired by common public interview topics. It can later be replaced by:
+
+- enterprise-owned role question banks
+- JD-generated question banks
+- user-customized practice banks
+
+The frontend can choose between AI Generated and IT Question Bank. In bank mode, the first question comes from the bank and the backend passes expectedPoints to the LLM prompt. The backend also performs a simple deterministic expected-point check so fallback mode can still show coveredPoints, missingPoints, and improvementTips.

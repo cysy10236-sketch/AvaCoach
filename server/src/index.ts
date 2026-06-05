@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import { env } from "./config/env.js";
 import interviewRouter from "./routes/interview.js";
+import questionBankRouter from "./routes/questionBank.js";
 import spatiusRouter from "./routes/spatius.js";
 import ttsRouter from "./routes/tts.js";
 
@@ -14,6 +15,7 @@ app.use(
 );
 app.use(express.json());
 app.use("/api/interview", interviewRouter);
+app.use("/api/question-bank", questionBankRouter);
 app.use("/api/spatius", spatiusRouter);
 app.use("/api/tts", ttsRouter);
 

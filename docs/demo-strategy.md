@@ -19,6 +19,8 @@ This stage focuses on the user experience:
 ## Current Approach
 
 - Use role-specific mock interview openings and questions.
+- Use a local structured IT question bank when the user chooses IT Question Bank mode.
+- Use expectedPoints from the question bank to produce deterministic covered/missing point feedback.
 - Use simple mock scoring based on answer length, role keywords, and response structure.
 - Keep all provider-facing logic on the backend.
 - Show a fallback digital human area in the frontend while the Spatius SDK is not available.
@@ -31,13 +33,14 @@ This stage focuses on the user experience:
 
 1. The user selects a target role.
 2. The frontend calls `POST /api/interview/start`.
-3. Ava displays a role-specific opening and first question.
+3. Ava displays either an AI-generated first question or a structured question-bank question.
 4. The candidate submits an answer.
 5. The frontend calls `POST /api/interview/next`.
-6. The backend returns mock feedback, a score, and the next follow-up question.
-7. After three candidate rounds, Ava suggests ending the interview.
-8. The frontend calls `POST /api/interview/report`.
-9. The final mock report shows overall score, strengths, weaknesses, and suggestions.
+6. The backend returns feedback, a score, and the next follow-up question.
+7. In question-bank mode, feedback includes covered points, missing points, and improvement tips.
+8. After three candidate rounds, Ava suggests ending the interview.
+9. The frontend calls `POST /api/interview/report`.
+10. The final report shows overall score, strengths, weaknesses, suggestions, and question-bank topic summaries when available.
 
 ## Planned Fallback Layers
 
@@ -51,7 +54,13 @@ This stage focuses on the user experience:
    - Preserve the existing response shape so the frontend does not break when switching between LLM and mock.
    - Support `LLM_PROVIDER=openai`, `LLM_PROVIDER=deepseek`, and `LLM_PROVIDER=mock`.
 
-3. Voice fallback
+3. Question bank fallback
+   - If topic does not match, pick another question in the same role.
+   - If role does not match, fall back to behavioral.
+   - If difficulty does not match, ignore difficulty and keep the flow running.
+   - Keep the seed bank local and replaceable.
+
+4. Voice fallback
    - Before TTS integration, use text-only interviewer responses.
    - After TTS integration, continue showing text responses when TTS fails.
    - If backend TTS fails, use browser SpeechSynthesis.
@@ -84,6 +93,19 @@ This keeps the product demo stable: a candidate can always start an interview, a
 Voice improves the digital human illusion, but audio is not required for the interview to work. AvaCoach now tries backend TTS first, then browser SpeechSynthesis, then silent text mode.
 
 This means a TTS provider failure, missing `OPENAI_API_KEY`, browser autoplay issue, or unsupported SpeechSynthesis implementation does not block the demo. The conversation text, feedback, and final report remain visible.
+
+## Question Bank Strategy
+
+The structured IT question bank makes AvaCoach feel like a real training product instead of a random AI question generator.
+
+The current bank is intentionally a small demo seed bank. It does not scrape login-only, paid, restricted, or anti-scraping content. It does not mirror any website or store full external pages. Questions are manually structured around common interview topics with expectedPoints and followUps.
+
+This seed layer can later be replaced by:
+
+- enterprise-owned question banks
+- JD-generated interview question sets
+- user-customized question banks
+- larger curated topic rubrics
 
 ## Product Notes To Capture Later
 

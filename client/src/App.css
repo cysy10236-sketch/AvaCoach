@@ -401,6 +401,12 @@
   gap: 8px;
 }
 
+.knowledge-feedback {
+  display: grid;
+  gap: 12px;
+  padding-top: 4px;
+}
+
 .report-list ul {
   display: grid;
   gap: 6px;
@@ -411,10 +417,20 @@
 
 .control-panel {
   display: grid;
-  grid-template-columns: minmax(190px, 0.6fr) minmax(320px, 1.4fr) auto;
+  grid-template-columns: minmax(230px, 0.75fr) minmax(320px, 1.35fr) auto;
   gap: 14px;
   align-items: end;
   padding: 18px;
+}
+
+.control-options,
+.bank-options {
+  display: grid;
+  gap: 12px;
+}
+
+.bank-options {
+  grid-template-columns: 0.8fr 1fr;
 }
 
 .control-panel label {
@@ -525,6 +541,7 @@ button:disabled {
     flex-direction: column;
   }
 
+  .bank-options,
   .button-row,
   .meta-grid {
     grid-template-columns: 1fr;

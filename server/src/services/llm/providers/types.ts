@@ -1,5 +1,6 @@
 import type {
   InterviewRole,
+  LlmEvaluationContext,
   Message,
   NextInterviewResponse,
   ReportInterviewResponse,
@@ -12,6 +13,7 @@ export interface LlmProvider {
     role: InterviewRole,
     answer: string,
     history: Message[],
+    context?: LlmEvaluationContext,
   ): Promise<NextInterviewResponse>;
   generateFinalReport(
     role: InterviewRole,

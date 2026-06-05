@@ -29,6 +29,9 @@ Completed deliverables:
 - Role-based mock interview flow.
 - Provider-based LLM dynamic interviewer with OpenAI, DeepSeek, and mock fallback.
 - Provider-based TTS voice pipeline with OpenAI, Volcano/Doubao V3 HTTP Chunked, browser speech, and silent fallback.
+- Structured IT question bank seed data for frontend, backend, AI, and behavioral interviews.
+- Question bank metadata: role, topic, difficulty, expected points, follow-ups, tags, and source note.
+- Knowledge-point feedback showing covered points, missing points, and improvement tips.
 - Spatius Direct Mode Session Token endpoint verified with direct token success.
 - Spatius AvatarKit Web SDK integration with real Avatar loading.
 - Official Spatius sample PCM validation path.
@@ -90,12 +93,15 @@ Completed:
 Pending:
 
 - ASR voice answer input.
-- IT question bank and stronger technical rubrics.
+- Larger enterprise/JD/custom question bank expansion.
+- Stronger technical rubrics.
 - Token refresh before expiration.
 - Production-grade SDK error handling.
 - Production deployment.
 
-I do not claim realtime conversation, microphone input, ASR, a completed IT question bank, or production deployment is completed yet. The current implementation follows the official sample-audio validation path and adds a product path where real interviewer TTS replies are converted or passed through as AvatarKit-compatible PCM for lip-sync.
+I do not claim realtime conversation, microphone input, ASR, a production-scale enterprise question bank, or production deployment is completed yet. The current implementation follows the official sample-audio validation path and adds a product path where real interviewer TTS replies are converted or passed through as AvatarKit-compatible PCM for lip-sync.
+
+The current IT question bank is a demo seed bank, not a scraped external dataset. It is intentionally small and structured for live demonstration. It can be replaced later by enterprise-owned role banks, JD-generated question sets, or user-customized question banks.
 
 ## 6. Demo Stability Strategy
 
@@ -110,6 +116,9 @@ AvaCoach is designed so that every external dependency has a fallback:
 - No Avatar ID -> avatar placeholder.
 - AvatarKit SDK issue -> avatar placeholder.
 - TTS provider issue -> browser speech or silent text mode.
+- Question bank topic mismatch -> same-role fallback question.
+- Question bank role mismatch -> behavioral fallback question.
+- Question bank difficulty mismatch -> ignore difficulty and keep the flow running.
 
 This makes the interview demo stable and fully usable even when some provider credentials are not available. The frontend does not care which LLM provider is active; it receives the same interview JSON contract from the backend.
 
@@ -132,6 +141,7 @@ These suggestions are based on the experience of building AvaCoach as a realisti
 Next improvements:
 
 - Speech input / ASR.
+- Expand the seed IT question bank into enterprise role banks, JD-generated banks, and user-customized banks.
 - Expand TTS observability, caching, and provider configuration for production use.
 - Resume upload.
 - JD-based interview generation.

@@ -8,6 +8,7 @@ import InterviewPanel from './components/InterviewPanel'
 import SystemNotice from './components/SystemNotice'
 import { stopSpeech, type VoiceMode } from './services/speechPlayer'
 import { speakTextWithAvatar } from './services/avatarSpeechPlayer'
+import { fetchQuestionBankTopics } from './services/questionBankApi'
 import {
   createInterviewReport,
   nextInterview,
@@ -20,6 +21,9 @@ import type {
   InterviewStage,
   LlmProvider,
   Message,
+  QuestionDifficulty,
+  QuestionMeta,
+  QuestionSource,
   Report,
   ResponseSource,
 } from './types/interview'
@@ -28,6 +32,10 @@ import type { AvatarSpeechSender } from './types/spatius'
 
 function App() {
   const [role, setRole] = useState<InterviewRole>('frontend')
+  const [questionSource, setQuestionSource] = useState<QuestionSource>('llm')
+  const [difficulty, setDifficulty] = useState<QuestionDifficulty>('medium')
+  const [topic, setTopic] = useState('')
+  const [topics, setTopics] = useState<string[]>([])
   const [stage, setStage] = useState<InterviewStage>('idle')
   const [avatarStatus, setAvatarStatus] = useState<AvatarStatus>('idle')
   const [messages, setMessages] = useState<Message[]>([])
@@ -47,6 +55,8 @@ function App() {
   })
   const [voiceMode, setVoiceMode] = useState<VoiceMode>('silent')
   const [voiceNotice, setVoiceNotice] = useState<string | null>(null)
+  const [activeQuestionMeta, setActiveQuestionMeta] = useState<QuestionMeta | null>(null)
+  const [answeredQuestionMetas, setAnsweredQuestionMetas] = useState<QuestionMeta[]>([])
   const speechRunRef = useRef(0)
   const avatarSpeechSenderRef = useRef<AvatarSpeechSender | null>(null)
   const avatarInterruptRef = useRef<(() => void) | null>(null)
@@ -56,6 +66,40 @@ function App() {
     () => messages.filter((message) => message.speaker === 'candidate').length,
     [messages],
   )
+
+  useEffect(() => {
+    let cancelled = false
+
+    if (questionSource !== 'bank') {
+      setTopics([])
+      setTopic('')
+      return () => {
+        cancelled = true
+      }
+    }
+
+    fetchQuestionBankTopics(role)
+      .then((nextTopics) => {
+        if (cancelled) {
+          return
+        }
+
+        setTopics(nextTopics)
+        setTopic((currentTopic) =>
+          currentTopic && nextTopics.includes(currentTopic) ? currentTopic : '',
+        )
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setTopics([])
+          setTopic('')
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [questionSource, role])
 
   const playInterviewerReply = useCallback(
     (text: string) => {
@@ -80,8 +124,8 @@ function App() {
               mode === 'avatar-tts'
                 ? null
                 : mode === 'browser'
-                  ? 'Browser speech does not drive avatar lip-sync.'
-                  : 'Voice fallback activated. Text interview remains available.',
+                  ? '浏览器语音不会驱动数字人口型。'
+                  : '语音 fallback 已启用，文字面试仍可继续。',
             )
             setAvatarStatus('speaking')
           }
@@ -93,8 +137,8 @@ function App() {
               mode === 'avatar-tts'
                 ? null
                 : mode === 'browser'
-                  ? 'Browser speech does not drive avatar lip-sync.'
-                  : 'Voice fallback activated. Text interview remains available.',
+                  ? '浏览器语音不会驱动数字人口型。'
+                  : '语音 fallback 已启用，文字面试仍可继续。',
             )
             setAvatarStatus('listening')
             setStage((current) => (current === 'finished' ? current : 'answering'))
@@ -141,7 +185,7 @@ function App() {
     avatarSpeechAbortRef.current?.abort()
     const abortController = new AbortController()
     avatarSpeechAbortRef.current = abortController
-    const text = 'Your interview report is ready. Please review the feedback on the right.'
+    const text = '你的面试报告已经生成，请查看右侧反馈。'
 
     void speakTextWithAvatar(text, {
       signal: abortController.signal,
@@ -158,8 +202,8 @@ function App() {
               mode === 'avatar-tts'
                 ? null
                 : mode === 'browser'
-                  ? 'Browser speech does not drive avatar lip-sync.'
-                  : 'Voice fallback activated. Text interview remains available.',
+                  ? '浏览器语音不会驱动数字人口型。'
+                  : '语音 fallback 已启用，文字面试仍可继续。',
             )
             setAvatarStatus('speaking')
           }
@@ -171,8 +215,8 @@ function App() {
               mode === 'avatar-tts'
                 ? null
                 : mode === 'browser'
-                  ? 'Browser speech does not drive avatar lip-sync.'
-                  : 'Voice fallback activated. Text interview remains available.',
+                  ? '浏览器语音不会驱动数字人口型。'
+                  : '语音 fallback 已启用，文字面试仍可继续。',
             )
             setAvatarStatus('idle')
         }
@@ -206,13 +250,20 @@ function App() {
     setReport(null)
     setShouldEnd(false)
     setMessages([])
+    setActiveQuestionMeta(null)
+    setAnsweredQuestionMetas([])
     setStage('opening')
     setAvatarStatus('evaluating')
 
     try {
-      const response = await startInterview(role)
+      const response = await startInterview(role, {
+        questionSource,
+        difficulty,
+        topic: topic || undefined,
+      })
       setResponseSource(response.source ?? 'mock')
       setLlmProvider(response.provider ?? 'mock')
+      setActiveQuestionMeta(response.questionMeta ?? null)
       setStage(response.stage)
       playInterviewerReply(response.replyText)
     } catch {
@@ -243,15 +294,20 @@ function App() {
     setMessages(nextHistory)
 
     try {
-      const response = await nextInterview(role, trimmedAnswer, nextHistory)
+      const response = await nextInterview(role, trimmedAnswer, nextHistory, activeQuestionMeta)
       setFeedback({
         score: response.score,
         feedback: response.feedback,
         suggestion: response.suggestion,
+        knowledgeFeedback: response.knowledgeFeedback,
       })
       setResponseSource(response.source ?? 'mock')
       setLlmProvider(response.provider ?? 'mock')
       setShouldEnd(response.shouldEnd)
+      if (activeQuestionMeta) {
+        setAnsweredQuestionMetas((current) => [...current, activeQuestionMeta])
+      }
+      setActiveQuestionMeta(response.questionMeta ?? activeQuestionMeta)
       playInterviewerReply(response.replyText)
     } catch {
       setStage('answering')
@@ -270,7 +326,7 @@ function App() {
     setAvatarStatus('evaluating')
 
     try {
-      const response = await createInterviewReport(role, messages)
+      const response = await createInterviewReport(role, messages, answeredQuestionMetas)
       setResponseSource(response.source ?? 'mock')
       setLlmProvider(response.provider ?? 'mock')
       setReport(response)
@@ -289,6 +345,10 @@ function App() {
   function handleReset() {
     stopCurrentSpeech()
     setRole('frontend')
+    setQuestionSource('llm')
+    setDifficulty('medium')
+    setTopic('')
+    setTopics([])
     setStage('idle')
     setAvatarStatus('idle')
     setMessages([])
@@ -301,6 +361,8 @@ function App() {
     setLlmProvider('mock')
     setVoiceMode('silent')
     setVoiceNotice(null)
+    setActiveQuestionMeta(null)
+    setAnsweredQuestionMetas([])
     setIsBusy(false)
   }
 
@@ -329,20 +391,27 @@ function App() {
           round={round}
         />
       </div>
-      <ControlPanel
-        answer={answer}
-        canEnd={shouldEnd}
-        error={null}
-        isBusy={isBusy}
-        onAnswerChange={setAnswer}
-        onEnd={handleEnd}
-        onReset={handleReset}
-        onRoleChange={setRole}
-        onStart={handleStart}
-        onSubmit={handleSubmit}
-        role={role}
-        stage={stage}
-      />
+        <ControlPanel
+          answer={answer}
+          canEnd={shouldEnd}
+          difficulty={difficulty}
+          error={null}
+          isBusy={isBusy}
+          onAnswerChange={setAnswer}
+          onDifficultyChange={setDifficulty}
+          onEnd={handleEnd}
+          onQuestionSourceChange={setQuestionSource}
+          onReset={handleReset}
+          onRoleChange={setRole}
+          onStart={handleStart}
+          onSubmit={handleSubmit}
+          onTopicChange={setTopic}
+          questionSource={questionSource}
+          role={role}
+          stage={stage}
+          topic={topic}
+          topics={topics}
+        />
     </main>
   )
 }

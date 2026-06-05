@@ -29,6 +29,19 @@ const roleProfiles: Record<
     ],
     keywords: ["react", "typescript", "性能", "组件", "工程化", "优化", "用户体验"],
   },
+  backend: {
+    label: "Backend Engineer",
+    opening:
+      "Hello, I am AvaCoach. Today we will focus on backend engineering, API design, data consistency, reliability, and system design.",
+    firstQuestion:
+      "Please briefly introduce yourself and explain why you are a good fit for a backend engineering role.",
+    followUps: [
+      "You mentioned backend project experience. Please describe how you designed a reliable API boundary.",
+      "If a production endpoint becomes slow, how would you locate the bottleneck and reduce impact?",
+      "Please share a time you improved database, cache, or service reliability in a real project.",
+    ],
+    keywords: ["node", "api", "database", "cache", "redis", "reliability", "system", "error"],
+  },
   product: {
     label: "Product Manager",
     opening:

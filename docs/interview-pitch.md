@@ -47,3 +47,19 @@ AvaCoach 是一个 AI 数字人模拟面试官。用户可以选择目标岗位�
 第三，提供更清晰的 Direct Mode quickstart 和错误排查，比如 token 过期、region 错误、App ID 不匹配、Avatar ID 缺失等。
 
 后续如果拿到 Avatar ID，我的下一步就是接入 Spatius Web Avatar SDK，把现在的 placeholder 替换成真实数字人，并把 TTS 音频接到 avatar driving 流程里。
+## Structured IT Question Bank Update
+
+AvaCoach now supports a structured IT question bank in addition to AI Generated questions.
+
+The question bank is local demo seed data. Each question has:
+
+- role
+- topic
+- difficulty
+- expectedPoints
+- followUps
+- tags
+
+This makes the demo more like a real interview training system. The interviewer can ask a controlled frontend/backend/AI/behavioral question, evaluate the candidate answer against expected knowledge points, show covered and missing points, and generate topic-level report summaries.
+
+The seed bank does not scrape login-only, paid, restricted, or anti-scraping content. It does not mirror external websites or store full pages. It is a replaceable demo layer that can later become an enterprise role bank, a JD-generated question bank, or a user-customized practice bank.

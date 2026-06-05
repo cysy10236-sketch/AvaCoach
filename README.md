@@ -17,12 +17,15 @@ Completed features:
 - Role-based interview flow.
 - Supported roles:
   - Frontend Engineer
+  - Backend Engineer
   - Product Manager
   - AI Engineer
   - General Behavioral
 - Provider-based LLM layer with OpenAI, DeepSeek, and Mock modes.
 - LLM dynamic interviewer when OpenAI or DeepSeek is configured.
 - Mock fallback interviewer when LLM is unavailable.
+- Structured IT question bank mode with role, topic, difficulty, expected points, follow-ups, and tags.
+- Question-bank-based feedback showing covered points, missing points, and improvement tips.
 - TTS voice playback for interviewer replies when backend TTS is available.
 - Volcano TTS V3 HTTP Chunked provider returning 16 kHz mono PCM16 audio.
 - Avatar TTS Lip-Sync path: interviewer replyText -> backend TTS -> frontend PCM16 conversion or raw PCM passthrough -> AvatarKit.
@@ -73,6 +76,7 @@ Completed:
 
 - React + Express monorepo.
 - Mock interview flow.
+- Structured IT question bank seed data.
 - LLM integration with fallback.
 - TTS / browser speech / silent fallback.
 - AvatarKit lip-sync for interviewer replies when real avatar and backend TTS are available.
@@ -120,6 +124,7 @@ Provider integrations:
 - TTS providers: OpenAI, Volcano/Doubao V3 HTTP Chunked, Mock fallback.
 - Browser audio decoding and PCM16 conversion for AvatarKit.
 - Spatius Direct Mode token endpoint.
+- Local structured question bank service and API.
 
 ## 6. Local Setup
 
@@ -181,6 +186,14 @@ VITE_SPATIUS_APP_ID=
 VITE_SPATIUS_AVATAR_ID=
 ```
 
+To switch to another Spatius digital human, for example an Asian interviewer avatar, update only this value in `client/.env`:
+
+```bash
+VITE_SPATIUS_AVATAR_ID=
+```
+
+Then restart `npm run dev` and click Connect Avatar again. Do not write the real Avatar ID into README or docs.
+
 Rules:
 
 - Never put `OPENAI_API_KEY` in `client/.env`.
@@ -218,6 +231,15 @@ TTS_PROVIDER=mock
 
 OpenAI and Volcano/Doubao are runnable TTS providers when their backend keys are configured. Volcano uses the V3 HTTP Chunked unidirectional endpoint and returns PCM audio chunks that AvaCoach concatenates into 16 kHz mono PCM16 before the frontend sends it to AvatarKit. Mock forces Browser Speech / Silent Text fallback.
 
+Question source options:
+
+```text
+AI Generated
+IT Question Bank
+```
+
+The local IT question bank is demo seed data. It is manually structured around common public interview topics and does not scrape, mirror, or store external website pages. It can be replaced later by an enterprise-owned question bank, JD-generated questions, or user-customized interview questions.
+
 ## 8. How to Run
 
 Start both frontend and backend:
@@ -248,6 +270,9 @@ npm run build
 
 Fallback is part of the demo stability design, not an error state.
 
+- IT question topic mismatch -> same-role fallback question.
+- IT question role mismatch -> behavioral fallback question.
+- IT question difficulty mismatch -> ignore difficulty and keep the flow running.
 - No OpenAI key -> mock interview logic.
 - No DeepSeek key -> mock interview logic.
 - `LLM_PROVIDER=mock` -> forced mock interview logic.
@@ -309,7 +334,7 @@ Next steps:
 - Improve generated TTS voice selection for the selected avatar.
 - Add robust ASR voice answers.
 - Add speech input / ASR.
-- Add IT question bank and structured technical rubrics.
+- Expand the seed IT question bank into enterprise role banks, JD-based generated banks, and custom user banks.
 - Add resume upload.
 - Add JD-based interview generation.
 - Add PDF report export.

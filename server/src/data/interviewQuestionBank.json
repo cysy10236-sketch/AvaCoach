@@ -1,0 +1,2642 @@
+[
+  {
+    "id": "frontend-js-closure-001",
+    "role": "frontend",
+    "difficulty": "easy",
+    "topic": "JavaScript",
+    "question": "请解释 JavaScript 闭包的概念，并结合一个前端项目场景说明它的用途。",
+    "expectedPoints": [
+      "能解释核心概念和执行机制",
+      "能结合浏览器或前端项目场景说明",
+      "能说出常见坑点和调试方法",
+      "能说明在工程实践中的取舍"
+    ],
+    "followUps": [
+      "你能结合真实项目举一个使用场景吗？",
+      "这个知识点如果使用不当，可能会带来什么问题？"
+    ],
+    "tags": [
+      "JavaScript",
+      "前端基础",
+      "工程实践"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-js-eventloop-002",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "JavaScript",
+    "question": "请说明浏览器事件循环中宏任务和微任务的区别，以及它们对异步代码执行顺序的影响。",
+    "expectedPoints": [
+      "能解释核心概念和执行机制",
+      "能结合浏览器或前端项目场景说明",
+      "能说出常见坑点和调试方法",
+      "能说明在工程实践中的取舍"
+    ],
+    "followUps": [
+      "你能结合真实项目举一个使用场景吗？",
+      "这个知识点如果使用不当，可能会带来什么问题？"
+    ],
+    "tags": [
+      "JavaScript",
+      "前端基础",
+      "工程实践"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-js-this-003",
+    "role": "frontend",
+    "difficulty": "easy",
+    "topic": "JavaScript",
+    "question": "请解释 JavaScript 中 this 的绑定规则，以及箭头函数和普通函数的区别。",
+    "expectedPoints": [
+      "能解释核心概念和执行机制",
+      "能结合浏览器或前端项目场景说明",
+      "能说出常见坑点和调试方法",
+      "能说明在工程实践中的取舍"
+    ],
+    "followUps": [
+      "你能结合真实项目举一个使用场景吗？",
+      "这个知识点如果使用不当，可能会带来什么问题？"
+    ],
+    "tags": [
+      "JavaScript",
+      "前端基础",
+      "工程实践"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-js-prototype-004",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "JavaScript",
+    "question": "请说明 JavaScript 原型链的工作机制，以及 class 语法和原型之间的关系。",
+    "expectedPoints": [
+      "能解释核心概念和执行机制",
+      "能结合浏览器或前端项目场景说明",
+      "能说出常见坑点和调试方法",
+      "能说明在工程实践中的取舍"
+    ],
+    "followUps": [
+      "你能结合真实项目举一个使用场景吗？",
+      "这个知识点如果使用不当，可能会带来什么问题？"
+    ],
+    "tags": [
+      "JavaScript",
+      "前端基础",
+      "工程实践"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-js-debounce-005",
+    "role": "frontend",
+    "difficulty": "easy",
+    "topic": "JavaScript",
+    "question": "请比较 debounce 和 throttle 的区别，并说明它们分别适合什么交互场景。",
+    "expectedPoints": [
+      "能解释核心概念和执行机制",
+      "能结合浏览器或前端项目场景说明",
+      "能说出常见坑点和调试方法",
+      "能说明在工程实践中的取舍"
+    ],
+    "followUps": [
+      "你能结合真实项目举一个使用场景吗？",
+      "这个知识点如果使用不当，可能会带来什么问题？"
+    ],
+    "tags": [
+      "JavaScript",
+      "前端基础",
+      "工程实践"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-ts-generic-006",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "TypeScript",
+    "question": "请说明 TypeScript 泛型适合解决什么问题，并举一个组件或工具函数中的例子。",
+    "expectedPoints": [
+      "能说明类型约束带来的安全性",
+      "能结合组件、接口或状态建模举例",
+      "能区分编译期类型和运行时校验",
+      "能避免过度复杂的类型设计"
+    ],
+    "followUps": [
+      "你能举一个项目里通过 TypeScript 避免 bug 的例子吗？",
+      "什么时候你会选择放宽类型，而不是继续增加泛型复杂度？"
+    ],
+    "tags": [
+      "TypeScript",
+      "类型安全",
+      "工程质量"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-ts-union-007",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "TypeScript",
+    "question": "请解释 discriminated union 的作用，以及它为什么适合建模复杂 UI 状态。",
+    "expectedPoints": [
+      "能说明类型约束带来的安全性",
+      "能结合组件、接口或状态建模举例",
+      "能区分编译期类型和运行时校验",
+      "能避免过度复杂的类型设计"
+    ],
+    "followUps": [
+      "你能举一个项目里通过 TypeScript 避免 bug 的例子吗？",
+      "什么时候你会选择放宽类型，而不是继续增加泛型复杂度？"
+    ],
+    "tags": [
+      "TypeScript",
+      "类型安全",
+      "工程质量"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-ts-unknown-008",
+    "role": "frontend",
+    "difficulty": "easy",
+    "topic": "TypeScript",
+    "question": "请比较 any 和 unknown 的区别，并说明在 API 数据边界上你会如何选择。",
+    "expectedPoints": [
+      "能说明类型约束带来的安全性",
+      "能结合组件、接口或状态建模举例",
+      "能区分编译期类型和运行时校验",
+      "能避免过度复杂的类型设计"
+    ],
+    "followUps": [
+      "你能举一个项目里通过 TypeScript 避免 bug 的例子吗？",
+      "什么时候你会选择放宽类型，而不是继续增加泛型复杂度？"
+    ],
+    "tags": [
+      "TypeScript",
+      "类型安全",
+      "工程质量"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-react-hooks-009",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "React",
+    "question": "请解释 useMemo 和 useCallback 的区别，并说明它们分别适合在什么场景下使用。",
+    "expectedPoints": [
+      "能说明 React 状态和渲染机制",
+      "能结合 Hooks 或组件设计举例",
+      "能识别依赖、闭包、重复渲染等常见问题",
+      "能说明性能优化不应脱离真实瓶颈"
+    ],
+    "followUps": [
+      "你能结合实际项目说一个优化 React 渲染的案例吗？",
+      "如果过度使用 memo 或 callback，可能会带来什么问题？"
+    ],
+    "tags": [
+      "React",
+      "Hooks",
+      "性能优化"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-react-effect-010",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "React",
+    "question": "请说明你如何理解 useEffect 的依赖数组，以及 cleanup 应该如何设计。",
+    "expectedPoints": [
+      "能说明 React 状态和渲染机制",
+      "能结合 Hooks 或组件设计举例",
+      "能识别依赖、闭包、重复渲染等常见问题",
+      "能说明性能优化不应脱离真实瓶颈"
+    ],
+    "followUps": [
+      "你能结合实际项目说一个优化 React 渲染的案例吗？",
+      "如果过度使用 memo 或 callback，可能会带来什么问题？"
+    ],
+    "tags": [
+      "React",
+      "Hooks",
+      "性能优化"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-react-render-011",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "React",
+    "question": "React 组件出现不必要渲染时，你通常会如何定位和优化？",
+    "expectedPoints": [
+      "能说明 React 状态和渲染机制",
+      "能结合 Hooks 或组件设计举例",
+      "能识别依赖、闭包、重复渲染等常见问题",
+      "能说明性能优化不应脱离真实瓶颈"
+    ],
+    "followUps": [
+      "你能结合实际项目说一个优化 React 渲染的案例吗？",
+      "如果过度使用 memo 或 callback，可能会带来什么问题？"
+    ],
+    "tags": [
+      "React",
+      "Hooks",
+      "性能优化"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-react-state-012",
+    "role": "frontend",
+    "difficulty": "easy",
+    "topic": "React",
+    "question": "请比较受控组件和非受控组件，并说明表单场景下的取舍。",
+    "expectedPoints": [
+      "能说明 React 状态和渲染机制",
+      "能结合 Hooks 或组件设计举例",
+      "能识别依赖、闭包、重复渲染等常见问题",
+      "能说明性能优化不应脱离真实瓶颈"
+    ],
+    "followUps": [
+      "你能结合实际项目说一个优化 React 渲染的案例吗？",
+      "如果过度使用 memo 或 callback，可能会带来什么问题？"
+    ],
+    "tags": [
+      "React",
+      "Hooks",
+      "性能优化"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-react-context-013",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "React",
+    "question": "请说明 React Context 的适用场景和性能风险。",
+    "expectedPoints": [
+      "能说明 React 状态和渲染机制",
+      "能结合 Hooks 或组件设计举例",
+      "能识别依赖、闭包、重复渲染等常见问题",
+      "能说明性能优化不应脱离真实瓶颈"
+    ],
+    "followUps": [
+      "你能结合实际项目说一个优化 React 渲染的案例吗？",
+      "如果过度使用 memo 或 callback，可能会带来什么问题？"
+    ],
+    "tags": [
+      "React",
+      "Hooks",
+      "性能优化"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-browser-storage-014",
+    "role": "frontend",
+    "difficulty": "easy",
+    "topic": "Browser",
+    "question": "请比较 localStorage、sessionStorage、Cookie 和 IndexedDB 的适用场景。",
+    "expectedPoints": [
+      "能说明浏览器底层机制",
+      "能结合性能、安全或交互场景分析",
+      "能说出常见兼容性或调试方法",
+      "能给出合理的工程取舍"
+    ],
+    "followUps": [
+      "如果页面出现交互卡顿，你会优先检查哪些浏览器指标？",
+      "这个机制在复杂业务页面里可能产生什么坑？"
+    ],
+    "tags": [
+      "浏览器",
+      "DOM",
+      "性能"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-browser-render-015",
+    "role": "frontend",
+    "difficulty": "hard",
+    "topic": "Browser",
+    "question": "请描述浏览器从 DOM/CSSOM 到页面像素渲染的大致流程。",
+    "expectedPoints": [
+      "能说明浏览器底层机制",
+      "能结合性能、安全或交互场景分析",
+      "能说出常见兼容性或调试方法",
+      "能给出合理的工程取舍"
+    ],
+    "followUps": [
+      "如果页面出现交互卡顿，你会优先检查哪些浏览器指标？",
+      "这个机制在复杂业务页面里可能产生什么坑？"
+    ],
+    "tags": [
+      "浏览器",
+      "DOM",
+      "性能"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-browser-event-016",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "Browser",
+    "question": "请解释事件捕获、目标阶段、冒泡和事件委托的区别。",
+    "expectedPoints": [
+      "能说明浏览器底层机制",
+      "能结合性能、安全或交互场景分析",
+      "能说出常见兼容性或调试方法",
+      "能给出合理的工程取舍"
+    ],
+    "followUps": [
+      "如果页面出现交互卡顿，你会优先检查哪些浏览器指标？",
+      "这个机制在复杂业务页面里可能产生什么坑？"
+    ],
+    "tags": [
+      "浏览器",
+      "DOM",
+      "性能"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-css-layout-017",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "CSS",
+    "question": "请比较 Flexbox 和 CSS Grid 的区别，并说明你会如何选择布局方案。",
+    "expectedPoints": [
+      "能说明布局或层叠机制",
+      "能结合真实 UI 场景给出方案",
+      "能考虑响应式、可维护性和可访问性",
+      "能避免文本溢出、布局抖动等问题"
+    ],
+    "followUps": [
+      "你遇到过哪些复杂布局问题？最后是怎么解决的？",
+      "如果按钮文字很长，你会如何保证不同屏幕下不溢出？"
+    ],
+    "tags": [
+      "CSS",
+      "布局",
+      "响应式"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-css-specificity-018",
+    "role": "frontend",
+    "difficulty": "easy",
+    "topic": "CSS",
+    "question": "请解释 CSS 优先级和层叠规则，以及你如何排查样式覆盖问题。",
+    "expectedPoints": [
+      "能说明布局或层叠机制",
+      "能结合真实 UI 场景给出方案",
+      "能考虑响应式、可维护性和可访问性",
+      "能避免文本溢出、布局抖动等问题"
+    ],
+    "followUps": [
+      "你遇到过哪些复杂布局问题？最后是怎么解决的？",
+      "如果按钮文字很长，你会如何保证不同屏幕下不溢出？"
+    ],
+    "tags": [
+      "CSS",
+      "布局",
+      "响应式"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-css-responsive-019",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "CSS",
+    "question": "请说明你如何设计一个在移动端和桌面端都稳定的响应式界面。",
+    "expectedPoints": [
+      "能说明布局或层叠机制",
+      "能结合真实 UI 场景给出方案",
+      "能考虑响应式、可维护性和可访问性",
+      "能避免文本溢出、布局抖动等问题"
+    ],
+    "followUps": [
+      "你遇到过哪些复杂布局问题？最后是怎么解决的？",
+      "如果按钮文字很长，你会如何保证不同屏幕下不溢出？"
+    ],
+    "tags": [
+      "CSS",
+      "布局",
+      "响应式"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-http-cache-020",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "HTTP / Network",
+    "question": "请说明前端性能优化中常见的 HTTP 缓存策略。",
+    "expectedPoints": [
+      "能说明 HTTP 协议或浏览器安全机制",
+      "能区分网络错误、业务错误和鉴权错误",
+      "能设计清晰的错误提示和重试策略",
+      "能避免泄露敏感信息"
+    ],
+    "followUps": [
+      "你如何排查一次线上接口跨域失败？",
+      "哪些请求适合重试，哪些请求不应该自动重试？"
+    ],
+    "tags": [
+      "HTTP",
+      "网络",
+      "错误处理"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-http-cors-021",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "HTTP / Network",
+    "question": "请解释 CORS 的作用、预检请求触发条件，以及常见排查思路。",
+    "expectedPoints": [
+      "能说明 HTTP 协议或浏览器安全机制",
+      "能区分网络错误、业务错误和鉴权错误",
+      "能设计清晰的错误提示和重试策略",
+      "能避免泄露敏感信息"
+    ],
+    "followUps": [
+      "你如何排查一次线上接口跨域失败？",
+      "哪些请求适合重试，哪些请求不应该自动重试？"
+    ],
+    "tags": [
+      "HTTP",
+      "网络",
+      "错误处理"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-http-rest-022",
+    "role": "frontend",
+    "difficulty": "easy",
+    "topic": "HTTP / Network",
+    "question": "表单提交失败时，你会如何设计前端 API 错误处理？",
+    "expectedPoints": [
+      "能说明 HTTP 协议或浏览器安全机制",
+      "能区分网络错误、业务错误和鉴权错误",
+      "能设计清晰的错误提示和重试策略",
+      "能避免泄露敏感信息"
+    ],
+    "followUps": [
+      "你如何排查一次线上接口跨域失败？",
+      "哪些请求适合重试，哪些请求不应该自动重试？"
+    ],
+    "tags": [
+      "HTTP",
+      "网络",
+      "错误处理"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-perf-metrics-023",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "Performance",
+    "question": "你会关注哪些前端性能指标？请说明它们分别反映什么用户体验问题。",
+    "expectedPoints": [
+      "能说明指标或瓶颈含义",
+      "能提出可验证的优化手段",
+      "能考虑首屏、交互、稳定性和资源体积",
+      "能说明优化前后如何量化效果"
+    ],
+    "followUps": [
+      "你做过哪一次性能优化？优化前后的数据是什么？",
+      "如果优化后代码复杂度上升，你会如何权衡？"
+    ],
+    "tags": [
+      "性能优化",
+      "Web Vitals",
+      "工程实践"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-perf-bundle-024",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "Performance",
+    "question": "请说明你会如何分析并降低 React 应用的 JavaScript bundle 体积。",
+    "expectedPoints": [
+      "能说明指标或瓶颈含义",
+      "能提出可验证的优化手段",
+      "能考虑首屏、交互、稳定性和资源体积",
+      "能说明优化前后如何量化效果"
+    ],
+    "followUps": [
+      "你做过哪一次性能优化？优化前后的数据是什么？",
+      "如果优化后代码复杂度上升，你会如何权衡？"
+    ],
+    "tags": [
+      "性能优化",
+      "Web Vitals",
+      "工程实践"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-perf-virtual-025",
+    "role": "frontend",
+    "difficulty": "hard",
+    "topic": "Performance",
+    "question": "如果需要渲染十万行表格数据，你会如何保证页面流畅？",
+    "expectedPoints": [
+      "能说明指标或瓶颈含义",
+      "能提出可验证的优化手段",
+      "能考虑首屏、交互、稳定性和资源体积",
+      "能说明优化前后如何量化效果"
+    ],
+    "followUps": [
+      "你做过哪一次性能优化？优化前后的数据是什么？",
+      "如果优化后代码复杂度上升，你会如何权衡？"
+    ],
+    "tags": [
+      "性能优化",
+      "Web Vitals",
+      "工程实践"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-eng-testing-026",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "Engineering",
+    "question": "你会如何决定一个前端功能应该测试哪些内容？",
+    "expectedPoints": [
+      "能体现工程质量意识",
+      "能说明测试、发布、监控或安全方案",
+      "能结合团队协作和长期维护考虑",
+      "能明确风险和回滚策略"
+    ],
+    "followUps": [
+      "你能举一个提升工程质量的实际案例吗？",
+      "如果时间很紧，你会优先保障哪些质量底线？"
+    ],
+    "tags": [
+      "工程化",
+      "质量",
+      "安全"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-eng-state-027",
+    "role": "frontend",
+    "difficulty": "hard",
+    "topic": "Engineering",
+    "question": "复杂 SaaS 前端中，你会如何拆分服务端状态和本地 UI 状态？",
+    "expectedPoints": [
+      "能体现工程质量意识",
+      "能说明测试、发布、监控或安全方案",
+      "能结合团队协作和长期维护考虑",
+      "能明确风险和回滚策略"
+    ],
+    "followUps": [
+      "你能举一个提升工程质量的实际案例吗？",
+      "如果时间很紧，你会优先保障哪些质量底线？"
+    ],
+    "tags": [
+      "工程化",
+      "质量",
+      "安全"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-eng-accessibility-028",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "Engineering",
+    "question": "上线一个有风险的前端改动时，你会如何降低发布风险？",
+    "expectedPoints": [
+      "能体现工程质量意识",
+      "能说明测试、发布、监控或安全方案",
+      "能结合团队协作和长期维护考虑",
+      "能明确风险和回滚策略"
+    ],
+    "followUps": [
+      "你能举一个提升工程质量的实际案例吗？",
+      "如果时间很紧，你会优先保障哪些质量底线？"
+    ],
+    "tags": [
+      "工程化",
+      "质量",
+      "安全"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-eng-security-029",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "Engineering",
+    "question": "你会如何做组件的可访问性检查？",
+    "expectedPoints": [
+      "能体现工程质量意识",
+      "能说明测试、发布、监控或安全方案",
+      "能结合团队协作和长期维护考虑",
+      "能明确风险和回滚策略"
+    ],
+    "followUps": [
+      "你能举一个提升工程质量的实际案例吗？",
+      "如果时间很紧，你会优先保障哪些质量底线？"
+    ],
+    "tags": [
+      "工程化",
+      "质量",
+      "安全"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "frontend-eng-release-030",
+    "role": "frontend",
+    "difficulty": "medium",
+    "topic": "Engineering",
+    "question": "前端项目中如何降低 XSS 风险？",
+    "expectedPoints": [
+      "能体现工程质量意识",
+      "能说明测试、发布、监控或安全方案",
+      "能结合团队协作和长期维护考虑",
+      "能明确风险和回滚策略"
+    ],
+    "followUps": [
+      "你能举一个提升工程质量的实际案例吗？",
+      "如果时间很紧，你会优先保障哪些质量底线？"
+    ],
+    "tags": [
+      "工程化",
+      "质量",
+      "安全"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-node-eventloop-001",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Node.js",
+    "question": "请解释 Node.js 事件循环，以及为什么 CPU 密集任务会影响 API 服务。",
+    "expectedPoints": [
+      "能说明 Node.js 运行机制",
+      "能区分 I/O 密集和 CPU 密集场景",
+      "能设计安全的错误处理和配置边界",
+      "能考虑内存、并发和可观测性"
+    ],
+    "followUps": [
+      "你如何发现 event loop 被阻塞？",
+      "哪些调试信息可以记录，哪些绝对不能记录？"
+    ],
+    "tags": [
+      "Node.js",
+      "后端工程",
+      "可靠性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-node-stream-002",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Node.js",
+    "question": "什么时候你会使用 Node.js Stream，而不是一次性读取完整数据？",
+    "expectedPoints": [
+      "能说明 Node.js 运行机制",
+      "能区分 I/O 密集和 CPU 密集场景",
+      "能设计安全的错误处理和配置边界",
+      "能考虑内存、并发和可观测性"
+    ],
+    "followUps": [
+      "你如何发现 event loop 被阻塞？",
+      "哪些调试信息可以记录，哪些绝对不能记录？"
+    ],
+    "tags": [
+      "Node.js",
+      "后端工程",
+      "可靠性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-node-errors-003",
+    "role": "backend",
+    "difficulty": "easy",
+    "topic": "Node.js",
+    "question": "Express API 中 async 错误你会如何处理？",
+    "expectedPoints": [
+      "能说明 Node.js 运行机制",
+      "能区分 I/O 密集和 CPU 密集场景",
+      "能设计安全的错误处理和配置边界",
+      "能考虑内存、并发和可观测性"
+    ],
+    "followUps": [
+      "你如何发现 event loop 被阻塞？",
+      "哪些调试信息可以记录，哪些绝对不能记录？"
+    ],
+    "tags": [
+      "Node.js",
+      "后端工程",
+      "可靠性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-node-env-004",
+    "role": "backend",
+    "difficulty": "easy",
+    "topic": "Node.js",
+    "question": "后端环境变量应该如何加载、校验和保护？",
+    "expectedPoints": [
+      "能说明 Node.js 运行机制",
+      "能区分 I/O 密集和 CPU 密集场景",
+      "能设计安全的错误处理和配置边界",
+      "能考虑内存、并发和可观测性"
+    ],
+    "followUps": [
+      "你如何发现 event loop 被阻塞？",
+      "哪些调试信息可以记录，哪些绝对不能记录？"
+    ],
+    "tags": [
+      "Node.js",
+      "后端工程",
+      "可靠性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-db-index-005",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Database",
+    "question": "请说明数据库索引的作用和代价，以及你会如何设计索引。",
+    "expectedPoints": [
+      "能说明数据一致性和查询性能",
+      "能结合真实查询模式或业务场景",
+      "能考虑并发、迁移和回滚风险",
+      "能提出可验证的优化或保护措施"
+    ],
+    "followUps": [
+      "你如何判断一个慢查询是否需要加索引？",
+      "如果线上迁移失败，你会如何恢复？"
+    ],
+    "tags": [
+      "数据库",
+      "索引",
+      "一致性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-db-transaction-006",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Database",
+    "question": "请解释事务和隔离级别在后端业务中的意义。",
+    "expectedPoints": [
+      "能说明数据一致性和查询性能",
+      "能结合真实查询模式或业务场景",
+      "能考虑并发、迁移和回滚风险",
+      "能提出可验证的优化或保护措施"
+    ],
+    "followUps": [
+      "你如何判断一个慢查询是否需要加索引？",
+      "如果线上迁移失败，你会如何恢复？"
+    ],
+    "tags": [
+      "数据库",
+      "索引",
+      "一致性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-db-pagination-007",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Database",
+    "question": "请比较 offset 分页和 cursor 分页的优缺点。",
+    "expectedPoints": [
+      "能说明数据一致性和查询性能",
+      "能结合真实查询模式或业务场景",
+      "能考虑并发、迁移和回滚风险",
+      "能提出可验证的优化或保护措施"
+    ],
+    "followUps": [
+      "你如何判断一个慢查询是否需要加索引？",
+      "如果线上迁移失败，你会如何恢复？"
+    ],
+    "tags": [
+      "数据库",
+      "索引",
+      "一致性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-db-nplusone-008",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Database",
+    "question": "什么是 N+1 查询问题？你会如何发现和解决？",
+    "expectedPoints": [
+      "能说明数据一致性和查询性能",
+      "能结合真实查询模式或业务场景",
+      "能考虑并发、迁移和回滚风险",
+      "能提出可验证的优化或保护措施"
+    ],
+    "followUps": [
+      "你如何判断一个慢查询是否需要加索引？",
+      "如果线上迁移失败，你会如何恢复？"
+    ],
+    "tags": [
+      "数据库",
+      "索引",
+      "一致性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-redis-cache-009",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Redis",
+    "question": "你会如何用 Redis 缓存一个耗时接口的结果？",
+    "expectedPoints": [
+      "能说明缓存 key、TTL 和失效策略",
+      "能识别缓存击穿、穿透、雪崩或锁风险",
+      "能考虑一致性和降级方案",
+      "能结合高并发场景分析"
+    ],
+    "followUps": [
+      "如何避免缓存击穿？",
+      "什么时候你不会选择 Redis 锁，而是用数据库约束？"
+    ],
+    "tags": [
+      "Redis",
+      "缓存",
+      "高并发"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-redis-lock-010",
+    "role": "backend",
+    "difficulty": "hard",
+    "topic": "Redis",
+    "question": "使用 Redis 做分布式锁时有哪些风险？",
+    "expectedPoints": [
+      "能说明缓存 key、TTL 和失效策略",
+      "能识别缓存击穿、穿透、雪崩或锁风险",
+      "能考虑一致性和降级方案",
+      "能结合高并发场景分析"
+    ],
+    "followUps": [
+      "如何避免缓存击穿？",
+      "什么时候你不会选择 Redis 锁，而是用数据库约束？"
+    ],
+    "tags": [
+      "Redis",
+      "缓存",
+      "高并发"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-redis-rate-011",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Redis",
+    "question": "请说明如何用 Redis 实现接口限流。",
+    "expectedPoints": [
+      "能说明缓存 key、TTL 和失效策略",
+      "能识别缓存击穿、穿透、雪崩或锁风险",
+      "能考虑一致性和降级方案",
+      "能结合高并发场景分析"
+    ],
+    "followUps": [
+      "如何避免缓存击穿？",
+      "什么时候你不会选择 Redis 锁，而是用数据库约束？"
+    ],
+    "tags": [
+      "Redis",
+      "缓存",
+      "高并发"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-rest-design-012",
+    "role": "backend",
+    "difficulty": "easy",
+    "topic": "REST API",
+    "question": "你认为一个对前端友好的 REST API 应该具备哪些特点？",
+    "expectedPoints": [
+      "能说明资源设计和状态码语义",
+      "能设计稳定的错误响应格式",
+      "能考虑幂等、版本和契约测试",
+      "能兼顾前端体验和后端安全"
+    ],
+    "followUps": [
+      "如果前端重复提交订单，你如何保证不会重复创建？",
+      "你会如何设计统一错误结构？"
+    ],
+    "tags": [
+      "REST API",
+      "接口设计",
+      "幂等"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-rest-idempotent-013",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "REST API",
+    "question": "请解释接口幂等性，以及它在哪些业务场景中特别重要。",
+    "expectedPoints": [
+      "能说明资源设计和状态码语义",
+      "能设计稳定的错误响应格式",
+      "能考虑幂等、版本和契约测试",
+      "能兼顾前端体验和后端安全"
+    ],
+    "followUps": [
+      "如果前端重复提交订单，你如何保证不会重复创建？",
+      "你会如何设计统一错误结构？"
+    ],
+    "tags": [
+      "REST API",
+      "接口设计",
+      "幂等"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-rest-validation-014",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "REST API",
+    "question": "后端请求参数校验应该放在哪里？你会如何设计错误返回？",
+    "expectedPoints": [
+      "能说明资源设计和状态码语义",
+      "能设计稳定的错误响应格式",
+      "能考虑幂等、版本和契约测试",
+      "能兼顾前端体验和后端安全"
+    ],
+    "followUps": [
+      "如果前端重复提交订单，你如何保证不会重复创建？",
+      "你会如何设计统一错误结构？"
+    ],
+    "tags": [
+      "REST API",
+      "接口设计",
+      "幂等"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-auth-jwt-015",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Authentication",
+    "question": "请比较 Session Cookie 和 JWT 鉴权方案的优缺点。",
+    "expectedPoints": [
+      "能区分认证和授权",
+      "能说明 token、cookie、CSRF、XSS 等风险",
+      "能设计服务端权限校验边界",
+      "能坚持密钥只在后端保存"
+    ],
+    "followUps": [
+      "JWT 如何撤销？",
+      "为什么前端环境变量不能存放真正的 secret？"
+    ],
+    "tags": [
+      "鉴权",
+      "权限",
+      "安全"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-auth-rbac-016",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Authentication",
+    "question": "内部管理后台的 RBAC 权限模型你会如何设计？",
+    "expectedPoints": [
+      "能区分认证和授权",
+      "能说明 token、cookie、CSRF、XSS 等风险",
+      "能设计服务端权限校验边界",
+      "能坚持密钥只在后端保存"
+    ],
+    "followUps": [
+      "JWT 如何撤销？",
+      "为什么前端环境变量不能存放真正的 secret？"
+    ],
+    "tags": [
+      "鉴权",
+      "权限",
+      "安全"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-auth-secrets-017",
+    "role": "backend",
+    "difficulty": "easy",
+    "topic": "Authentication",
+    "question": "后端项目中如何保护 API Key 和其他敏感密钥？",
+    "expectedPoints": [
+      "能区分认证和授权",
+      "能说明 token、cookie、CSRF、XSS 等风险",
+      "能设计服务端权限校验边界",
+      "能坚持密钥只在后端保存"
+    ],
+    "followUps": [
+      "JWT 如何撤销？",
+      "为什么前端环境变量不能存放真正的 secret？"
+    ],
+    "tags": [
+      "鉴权",
+      "权限",
+      "安全"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-concurrency-race-018",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Concurrency",
+    "question": "请举例说明后端接口中的竞态条件，以及你会如何避免。",
+    "expectedPoints": [
+      "能识别并发读写风险",
+      "能使用事务、约束、队列或锁解决问题",
+      "能考虑重试、幂等和失败恢复",
+      "能说明系统稳定性取舍"
+    ],
+    "followUps": [
+      "两个用户同时抢最后一张券，你会怎么设计？",
+      "如何避免重试风暴？"
+    ],
+    "tags": [
+      "并发",
+      "队列",
+      "可靠性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-concurrency-queue-019",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Concurrency",
+    "question": "什么时候你会把 API 请求里的工作放到后台队列执行？",
+    "expectedPoints": [
+      "能识别并发读写风险",
+      "能使用事务、约束、队列或锁解决问题",
+      "能考虑重试、幂等和失败恢复",
+      "能说明系统稳定性取舍"
+    ],
+    "followUps": [
+      "两个用户同时抢最后一张券，你会怎么设计？",
+      "如何避免重试风暴？"
+    ],
+    "tags": [
+      "并发",
+      "队列",
+      "可靠性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-concurrency-backpressure-020",
+    "role": "backend",
+    "difficulty": "hard",
+    "topic": "Concurrency",
+    "question": "什么是 backpressure？它对后端服务稳定性有什么影响？",
+    "expectedPoints": [
+      "能识别并发读写风险",
+      "能使用事务、约束、队列或锁解决问题",
+      "能考虑重试、幂等和失败恢复",
+      "能说明系统稳定性取舍"
+    ],
+    "followUps": [
+      "两个用户同时抢最后一张券，你会怎么设计？",
+      "如何避免重试风暴？"
+    ],
+    "tags": [
+      "并发",
+      "队列",
+      "可靠性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-system-scale-021",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "System Design",
+    "question": "如果一个读多写少的 API 压力很大，你会如何扩展？",
+    "expectedPoints": [
+      "能拆分核心模块和数据流",
+      "能考虑扩展性、可靠性和安全性",
+      "能说明缓存、队列、存储或实时通信选择",
+      "能识别瓶颈和降级策略"
+    ],
+    "followUps": [
+      "这个方案最大的瓶颈在哪里？",
+      "如果流量增长十倍，你会优先改哪里？"
+    ],
+    "tags": [
+      "系统设计",
+      "架构",
+      "扩展性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-system-upload-022",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "System Design",
+    "question": "请设计一个大文件上传流程。",
+    "expectedPoints": [
+      "能拆分核心模块和数据流",
+      "能考虑扩展性、可靠性和安全性",
+      "能说明缓存、队列、存储或实时通信选择",
+      "能识别瓶颈和降级策略"
+    ],
+    "followUps": [
+      "这个方案最大的瓶颈在哪里？",
+      "如果流量增长十倍，你会优先改哪里？"
+    ],
+    "tags": [
+      "系统设计",
+      "架构",
+      "扩展性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-system-notification-023",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "System Design",
+    "question": "请设计一个同时支持站内信和邮件的通知系统。",
+    "expectedPoints": [
+      "能拆分核心模块和数据流",
+      "能考虑扩展性、可靠性和安全性",
+      "能说明缓存、队列、存储或实时通信选择",
+      "能识别瓶颈和降级策略"
+    ],
+    "followUps": [
+      "这个方案最大的瓶颈在哪里？",
+      "如果流量增长十倍，你会优先改哪里？"
+    ],
+    "tags": [
+      "系统设计",
+      "架构",
+      "扩展性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-system-realtime-024",
+    "role": "backend",
+    "difficulty": "hard",
+    "topic": "System Design",
+    "question": "WebSocket、SSE 和轮询分别适合什么场景？",
+    "expectedPoints": [
+      "能拆分核心模块和数据流",
+      "能考虑扩展性、可靠性和安全性",
+      "能说明缓存、队列、存储或实时通信选择",
+      "能识别瓶颈和降级策略"
+    ],
+    "followUps": [
+      "这个方案最大的瓶颈在哪里？",
+      "如果流量增长十倍，你会优先改哪里？"
+    ],
+    "tags": [
+      "系统设计",
+      "架构",
+      "扩展性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-error-observability-025",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Error Handling",
+    "question": "什么样的后端错误日志既有用又安全？",
+    "expectedPoints": [
+      "能区分用户错误和系统错误",
+      "能记录安全的诊断上下文",
+      "能设计 timeout、retry、fallback 和告警",
+      "不能泄露 key、token、headers 或敏感数据"
+    ],
+    "followUps": [
+      "你会为 provider 失败记录哪些安全字段？",
+      "哪些错误不应该重试？"
+    ],
+    "tags": [
+      "错误处理",
+      "可观测性",
+      "fallback"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-error-retry-026",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Error Handling",
+    "question": "调用外部 provider 失败时，你会如何设计重试和 fallback？",
+    "expectedPoints": [
+      "能区分用户错误和系统错误",
+      "能记录安全的诊断上下文",
+      "能设计 timeout、retry、fallback 和告警",
+      "不能泄露 key、token、headers 或敏感数据"
+    ],
+    "followUps": [
+      "你会为 provider 失败记录哪些安全字段？",
+      "哪些错误不应该重试？"
+    ],
+    "tags": [
+      "错误处理",
+      "可观测性",
+      "fallback"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-error-timeout-027",
+    "role": "backend",
+    "difficulty": "easy",
+    "topic": "Error Handling",
+    "question": "为什么后端服务必须设置 timeout？",
+    "expectedPoints": [
+      "能区分用户错误和系统错误",
+      "能记录安全的诊断上下文",
+      "能设计 timeout、retry、fallback 和告警",
+      "不能泄露 key、token、headers 或敏感数据"
+    ],
+    "followUps": [
+      "你会为 provider 失败记录哪些安全字段？",
+      "哪些错误不应该重试？"
+    ],
+    "tags": [
+      "错误处理",
+      "可观测性",
+      "fallback"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-system-contract-028",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "REST API",
+    "question": "你会如何避免前后端 API 契约漂移？",
+    "expectedPoints": [
+      "能说明资源设计和状态码语义",
+      "能设计稳定的错误响应格式",
+      "能考虑幂等、版本和契约测试",
+      "能兼顾前端体验和后端安全"
+    ],
+    "followUps": [
+      "如果前端重复提交订单，你如何保证不会重复创建？",
+      "你会如何设计统一错误结构？"
+    ],
+    "tags": [
+      "REST API",
+      "接口设计",
+      "幂等"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-db-migration-029",
+    "role": "backend",
+    "difficulty": "medium",
+    "topic": "Database",
+    "question": "数据库 schema 迁移上线时，你会如何降低风险？",
+    "expectedPoints": [
+      "能说明数据一致性和查询性能",
+      "能结合真实查询模式或业务场景",
+      "能考虑并发、迁移和回滚风险",
+      "能提出可验证的优化或保护措施"
+    ],
+    "followUps": [
+      "你如何判断一个慢查询是否需要加索引？",
+      "如果线上迁移失败，你会如何恢复？"
+    ],
+    "tags": [
+      "数据库",
+      "索引",
+      "一致性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "backend-system-multitenant-030",
+    "role": "backend",
+    "difficulty": "hard",
+    "topic": "System Design",
+    "question": "多租户 SaaS 后端设计要重点考虑哪些问题？",
+    "expectedPoints": [
+      "能拆分核心模块和数据流",
+      "能考虑扩展性、可靠性和安全性",
+      "能说明缓存、队列、存储或实时通信选择",
+      "能识别瓶颈和降级策略"
+    ],
+    "followUps": [
+      "这个方案最大的瓶颈在哪里？",
+      "如果流量增长十倍，你会优先改哪里？"
+    ],
+    "tags": [
+      "系统设计",
+      "架构",
+      "扩展性"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-llm-temp-001",
+    "role": "ai",
+    "difficulty": "easy",
+    "topic": "LLM",
+    "question": "请说明 temperature 和 top_p 对 LLM 输出有什么影响。",
+    "expectedPoints": [
+      "能说明模型参数或上下文限制",
+      "能设计结构化输出和校验机制",
+      "能考虑成本、延迟和稳定性",
+      "能保留 fallback，避免用户流程中断"
+    ],
+    "followUps": [
+      "如果模型 JSON 解析失败，你会怎么兜底？",
+      "什么时候你会选择更小更快的模型？"
+    ],
+    "tags": [
+      "LLM",
+      "结构化输出",
+      "fallback"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-llm-json-002",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "LLM",
+    "question": "你会如何让 LLM 稳定返回结构化 JSON？",
+    "expectedPoints": [
+      "能说明模型参数或上下文限制",
+      "能设计结构化输出和校验机制",
+      "能考虑成本、延迟和稳定性",
+      "能保留 fallback，避免用户流程中断"
+    ],
+    "followUps": [
+      "如果模型 JSON 解析失败，你会怎么兜底？",
+      "什么时候你会选择更小更快的模型？"
+    ],
+    "tags": [
+      "LLM",
+      "结构化输出",
+      "fallback"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-llm-context-003",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "LLM",
+    "question": "上下文窗口限制会如何影响 AI 产品设计？",
+    "expectedPoints": [
+      "能说明模型参数或上下文限制",
+      "能设计结构化输出和校验机制",
+      "能考虑成本、延迟和稳定性",
+      "能保留 fallback，避免用户流程中断"
+    ],
+    "followUps": [
+      "如果模型 JSON 解析失败，你会怎么兜底？",
+      "什么时候你会选择更小更快的模型？"
+    ],
+    "tags": [
+      "LLM",
+      "结构化输出",
+      "fallback"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-prompt-role-004",
+    "role": "ai",
+    "difficulty": "easy",
+    "topic": "Prompt Engineering",
+    "question": "你认为一个专业 AI 面试官 prompt 应该包含哪些内容？",
+    "expectedPoints": [
+      "能明确角色、任务、约束和输出格式",
+      "能把评分标准拆成可执行维度",
+      "能要求模型引用回答证据",
+      "能限制输出长度和问题数量"
+    ],
+    "followUps": [
+      "如何避免反馈过于空泛？",
+      "如何让模型每次只问一个问题？"
+    ],
+    "tags": [
+      "Prompt",
+      "Rubric",
+      "评分"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-prompt-eval-005",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "Prompt Engineering",
+    "question": "如何让 LLM 基于 expectedPoints 对候选人回答评分？",
+    "expectedPoints": [
+      "能明确角色、任务、约束和输出格式",
+      "能把评分标准拆成可执行维度",
+      "能要求模型引用回答证据",
+      "能限制输出长度和问题数量"
+    ],
+    "followUps": [
+      "如何避免反馈过于空泛？",
+      "如何让模型每次只问一个问题？"
+    ],
+    "tags": [
+      "Prompt",
+      "Rubric",
+      "评分"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-rag-basic-006",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "RAG",
+    "question": "请描述一个基础 RAG 系统的完整链路。",
+    "expectedPoints": [
+      "能说明切分、embedding、向量检索和生成流程",
+      "能识别召回率、精确率和上下文噪声问题",
+      "能考虑元数据、权限和来源可信度",
+      "能说明评估和调优方法"
+    ],
+    "followUps": [
+      "如果检索结果相关但不准确，你会怎么排查？",
+      "如何避免模型编造引用？"
+    ],
+    "tags": [
+      "RAG",
+      "检索",
+      "知识库"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-rag-chunk-007",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "RAG",
+    "question": "chunk size 和 overlap 会如何影响 RAG 检索质量？",
+    "expectedPoints": [
+      "能说明切分、embedding、向量检索和生成流程",
+      "能识别召回率、精确率和上下文噪声问题",
+      "能考虑元数据、权限和来源可信度",
+      "能说明评估和调优方法"
+    ],
+    "followUps": [
+      "如果检索结果相关但不准确，你会怎么排查？",
+      "如何避免模型编造引用？"
+    ],
+    "tags": [
+      "RAG",
+      "检索",
+      "知识库"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-rag-rerank-008",
+    "role": "ai",
+    "difficulty": "hard",
+    "topic": "RAG",
+    "question": "什么时候你会在 RAG 系统中加入 rerank？",
+    "expectedPoints": [
+      "能说明切分、embedding、向量检索和生成流程",
+      "能识别召回率、精确率和上下文噪声问题",
+      "能考虑元数据、权限和来源可信度",
+      "能说明评估和调优方法"
+    ],
+    "followUps": [
+      "如果检索结果相关但不准确，你会怎么排查？",
+      "如何避免模型编造引用？"
+    ],
+    "tags": [
+      "RAG",
+      "检索",
+      "知识库"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-embed-similarity-009",
+    "role": "ai",
+    "difficulty": "easy",
+    "topic": "Embedding",
+    "question": "什么是 embedding？它为什么适合语义搜索？",
+    "expectedPoints": [
+      "能说明文本向量化和语义相似度",
+      "能比较关键词和向量检索的优缺点",
+      "能设计 recall@k、precision@k 等评估方式",
+      "能考虑领域词汇和 hard negative"
+    ],
+    "followUps": [
+      "向量搜索在哪些场景会不如关键词搜索？",
+      "你会如何构造评测集？"
+    ],
+    "tags": [
+      "Embedding",
+      "语义搜索",
+      "评估"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-embed-hybrid-010",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "Embedding",
+    "question": "为什么有时需要结合关键词搜索和向量搜索？",
+    "expectedPoints": [
+      "能说明文本向量化和语义相似度",
+      "能比较关键词和向量检索的优缺点",
+      "能设计 recall@k、precision@k 等评估方式",
+      "能考虑领域词汇和 hard negative"
+    ],
+    "followUps": [
+      "向量搜索在哪些场景会不如关键词搜索？",
+      "你会如何构造评测集？"
+    ],
+    "tags": [
+      "Embedding",
+      "语义搜索",
+      "评估"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-vector-index-011",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "Vector Database",
+    "question": "向量数据库相比普通数据库存数组，多解决了哪些问题？",
+    "expectedPoints": [
+      "能说明 ANN 检索和索引能力",
+      "能结合 metadata 做过滤和权限控制",
+      "能考虑召回率、延迟和版本迁移",
+      "能说明什么时候 pgvector 已经足够"
+    ],
+    "followUps": [
+      "如何保证多租户 RAG 的数据隔离？",
+      "embedding 模型升级时你会如何迁移？"
+    ],
+    "tags": [
+      "向量数据库",
+      "ANN",
+      "检索"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-vector-filter-012",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "Vector Database",
+    "question": "metadata filter 会如何影响向量检索效果？",
+    "expectedPoints": [
+      "能说明 ANN 检索和索引能力",
+      "能结合 metadata 做过滤和权限控制",
+      "能考虑召回率、延迟和版本迁移",
+      "能说明什么时候 pgvector 已经足够"
+    ],
+    "followUps": [
+      "如何保证多租户 RAG 的数据隔离？",
+      "embedding 模型升级时你会如何迁移？"
+    ],
+    "tags": [
+      "向量数据库",
+      "ANN",
+      "检索"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-agent-tools-013",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "Agent",
+    "question": "AI Agent 的 tool calling 是什么？会引入哪些风险？",
+    "expectedPoints": [
+      "能说明工具调用和结构化参数",
+      "能设计权限、校验和状态管理",
+      "能设置步数、时间和安全边界",
+      "能处理工具失败和恢复"
+    ],
+    "followUps": [
+      "什么时候简单 workflow 比 Agent 更合适？",
+      "工具参数为什么不能完全信任模型？"
+    ],
+    "tags": [
+      "Agent",
+      "工具调用",
+      "安全"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-agent-state-014",
+    "role": "ai",
+    "difficulty": "hard",
+    "topic": "Agent",
+    "question": "多步骤 Agent 工作流中，你会如何管理状态？",
+    "expectedPoints": [
+      "能说明工具调用和结构化参数",
+      "能设计权限、校验和状态管理",
+      "能设置步数、时间和安全边界",
+      "能处理工具失败和恢复"
+    ],
+    "followUps": [
+      "什么时候简单 workflow 比 Agent 更合适？",
+      "工具参数为什么不能完全信任模型？"
+    ],
+    "tags": [
+      "Agent",
+      "工具调用",
+      "安全"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-eval-golden-015",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "Model Evaluation",
+    "question": "你会如何评估一个 AI 面试官的反馈质量？",
+    "expectedPoints": [
+      "能设计离线样本和人工 review",
+      "能关注质量、延迟、成本和安全",
+      "能用一致的 rubric 评估输出",
+      "能定义回滚或切换标准"
+    ],
+    "followUps": [
+      "golden dataset 应该包含什么？",
+      "如何评估评分一致性？"
+    ],
+    "tags": [
+      "模型评估",
+      "指标",
+      "实验"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-eval-online-016",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "Model Evaluation",
+    "question": "AI 面试产品上线后，你会关注哪些在线指标？",
+    "expectedPoints": [
+      "能设计离线样本和人工 review",
+      "能关注质量、延迟、成本和安全",
+      "能用一致的 rubric 评估输出",
+      "能定义回滚或切换标准"
+    ],
+    "followUps": [
+      "golden dataset 应该包含什么？",
+      "如何评估评分一致性？"
+    ],
+    "tags": [
+      "模型评估",
+      "指标",
+      "实验"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-product-latency-017",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "AI Product",
+    "question": "延迟和成本会如何影响 AI 产品架构设计？",
+    "expectedPoints": [
+      "能从用户体验角度分析模型链路",
+      "能说明成本、延迟和质量取舍",
+      "能设计清晰的模式提示和降级提示",
+      "能保证核心流程不中断"
+    ],
+    "followUps": [
+      "如何让 fallback 看起来不是故障？",
+      "哪些状态应该展示在 AvatarPanel 或 Header 上？"
+    ],
+    "tags": [
+      "AI 产品",
+      "体验",
+      "fallback"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-product-human-018",
+    "role": "ai",
+    "difficulty": "easy",
+    "topic": "AI Product",
+    "question": "为什么 AI demo 产品必须设计 fallback？",
+    "expectedPoints": [
+      "能从用户体验角度分析模型链路",
+      "能说明成本、延迟和质量取舍",
+      "能设计清晰的模式提示和降级提示",
+      "能保证核心流程不中断"
+    ],
+    "followUps": [
+      "如何让 fallback 看起来不是故障？",
+      "哪些状态应该展示在 AvatarPanel 或 Header 上？"
+    ],
+    "tags": [
+      "AI 产品",
+      "体验",
+      "fallback"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-safety-hallucination-019",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "Safety / Hallucination",
+    "question": "LLM 幻觉通常来自哪些原因？产品上如何降低影响？",
+    "expectedPoints": [
+      "能识别幻觉、注入和隐私风险",
+      "能设计检索 grounding、权限和校验机制",
+      "能避免过度承诺模型准确性",
+      "能说明日志和数据留存边界"
+    ],
+    "followUps": [
+      "如果模型不确定，应该如何表达？",
+      "哪些内容不应该写入日志？"
+    ],
+    "tags": [
+      "AI 安全",
+      "幻觉",
+      "隐私"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-safety-prompt-injection-020",
+    "role": "ai",
+    "difficulty": "hard",
+    "topic": "Safety / Hallucination",
+    "question": "RAG 或 Agent 系统如何防御 prompt injection？",
+    "expectedPoints": [
+      "能识别幻觉、注入和隐私风险",
+      "能设计检索 grounding、权限和校验机制",
+      "能避免过度承诺模型准确性",
+      "能说明日志和数据留存边界"
+    ],
+    "followUps": [
+      "如果模型不确定，应该如何表达？",
+      "哪些内容不应该写入日志？"
+    ],
+    "tags": [
+      "AI 安全",
+      "幻觉",
+      "隐私"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-llm-provider-021",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "LLM",
+    "question": "如何设计一个可以切换多个 LLM 厂商的 provider 抽象？",
+    "expectedPoints": [
+      "能说明模型参数或上下文限制",
+      "能设计结构化输出和校验机制",
+      "能考虑成本、延迟和稳定性",
+      "能保留 fallback，避免用户流程中断"
+    ],
+    "followUps": [
+      "如果模型 JSON 解析失败，你会怎么兜底？",
+      "什么时候你会选择更小更快的模型？"
+    ],
+    "tags": [
+      "LLM",
+      "结构化输出",
+      "fallback"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-prompt-rubric-022",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "Prompt Engineering",
+    "question": "你会如何设计面试回答的评分 rubric？",
+    "expectedPoints": [
+      "能明确角色、任务、约束和输出格式",
+      "能把评分标准拆成可执行维度",
+      "能要求模型引用回答证据",
+      "能限制输出长度和问题数量"
+    ],
+    "followUps": [
+      "如何避免反馈过于空泛？",
+      "如何让模型每次只问一个问题？"
+    ],
+    "tags": [
+      "Prompt",
+      "Rubric",
+      "评分"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-rag-citation-023",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "RAG",
+    "question": "AI 产品中引用来源或 citation 应该如何设计？",
+    "expectedPoints": [
+      "能说明切分、embedding、向量检索和生成流程",
+      "能识别召回率、精确率和上下文噪声问题",
+      "能考虑元数据、权限和来源可信度",
+      "能说明评估和调优方法"
+    ],
+    "followUps": [
+      "如果检索结果相关但不准确，你会怎么排查？",
+      "如何避免模型编造引用？"
+    ],
+    "tags": [
+      "RAG",
+      "检索",
+      "知识库"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-vector-drift-024",
+    "role": "ai",
+    "difficulty": "hard",
+    "topic": "Vector Database",
+    "question": "embedding 模型或语料更新后，向量库可能出现哪些问题？",
+    "expectedPoints": [
+      "能说明 ANN 检索和索引能力",
+      "能结合 metadata 做过滤和权限控制",
+      "能考虑召回率、延迟和版本迁移",
+      "能说明什么时候 pgvector 已经足够"
+    ],
+    "followUps": [
+      "如何保证多租户 RAG 的数据隔离？",
+      "embedding 模型升级时你会如何迁移？"
+    ],
+    "tags": [
+      "向量数据库",
+      "ANN",
+      "检索"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-agent-loop-025",
+    "role": "ai",
+    "difficulty": "hard",
+    "topic": "Agent",
+    "question": "如何避免 Agent 陷入循环或执行过多动作？",
+    "expectedPoints": [
+      "能说明工具调用和结构化参数",
+      "能设计权限、校验和状态管理",
+      "能设置步数、时间和安全边界",
+      "能处理工具失败和恢复"
+    ],
+    "followUps": [
+      "什么时候简单 workflow 比 Agent 更合适？",
+      "工具参数为什么不能完全信任模型？"
+    ],
+    "tags": [
+      "Agent",
+      "工具调用",
+      "安全"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-eval-abtest-026",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "Model Evaluation",
+    "question": "如何比较两个 prompt 或模型在生产中的效果？",
+    "expectedPoints": [
+      "能设计离线样本和人工 review",
+      "能关注质量、延迟、成本和安全",
+      "能用一致的 rubric 评估输出",
+      "能定义回滚或切换标准"
+    ],
+    "followUps": [
+      "golden dataset 应该包含什么？",
+      "如何评估评分一致性？"
+    ],
+    "tags": [
+      "模型评估",
+      "指标",
+      "实验"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-product-ux-027",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "AI Product",
+    "question": "AI 产品 UI 应该如何让用户理解当前模式和状态？",
+    "expectedPoints": [
+      "能从用户体验角度分析模型链路",
+      "能说明成本、延迟和质量取舍",
+      "能设计清晰的模式提示和降级提示",
+      "能保证核心流程不中断"
+    ],
+    "followUps": [
+      "如何让 fallback 看起来不是故障？",
+      "哪些状态应该展示在 AvatarPanel 或 Header 上？"
+    ],
+    "tags": [
+      "AI 产品",
+      "体验",
+      "fallback"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-safety-data-028",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "Safety / Hallucination",
+    "question": "AI 面试产品会涉及哪些数据隐私问题？",
+    "expectedPoints": [
+      "能识别幻觉、注入和隐私风险",
+      "能设计检索 grounding、权限和校验机制",
+      "能避免过度承诺模型准确性",
+      "能说明日志和数据留存边界"
+    ],
+    "followUps": [
+      "如果模型不确定，应该如何表达？",
+      "哪些内容不应该写入日志？"
+    ],
+    "tags": [
+      "AI 安全",
+      "幻觉",
+      "隐私"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-embed-eval-029",
+    "role": "ai",
+    "difficulty": "medium",
+    "topic": "Embedding",
+    "question": "你会如何评估 embedding 检索效果？",
+    "expectedPoints": [
+      "能说明文本向量化和语义相似度",
+      "能比较关键词和向量检索的优缺点",
+      "能设计 recall@k、precision@k 等评估方式",
+      "能考虑领域词汇和 hard negative"
+    ],
+    "followUps": [
+      "向量搜索在哪些场景会不如关键词搜索？",
+      "你会如何构造评测集？"
+    ],
+    "tags": [
+      "Embedding",
+      "语义搜索",
+      "评估"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "ai-llm-fallback-030",
+    "role": "ai",
+    "difficulty": "easy",
+    "topic": "LLM",
+    "question": "用户流程中 LLM provider 失败时，系统应该怎么处理？",
+    "expectedPoints": [
+      "能说明模型参数或上下文限制",
+      "能设计结构化输出和校验机制",
+      "能考虑成本、延迟和稳定性",
+      "能保留 fallback，避免用户流程中断"
+    ],
+    "followUps": [
+      "如果模型 JSON 解析失败，你会怎么兜底？",
+      "什么时候你会选择更小更快的模型？"
+    ],
+    "tags": [
+      "LLM",
+      "结构化输出",
+      "fallback"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-intro-001",
+    "role": "behavioral",
+    "difficulty": "easy",
+    "topic": "Self Introduction",
+    "question": "请做一个简短的自我介绍，并说明你和目标岗位的匹配点。",
+    "expectedPoints": [
+      "背景介绍简洁清楚",
+      "突出岗位相关能力",
+      "提到代表性项目或成果",
+      "结尾能自然连接求职动机"
+    ],
+    "followUps": [
+      "你背景里最能证明岗位匹配度的一点是什么？",
+      "如果面对技术面试官，你会如何调整这段介绍？"
+    ],
+    "tags": [
+      "自我介绍",
+      "岗位匹配",
+      "表达"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-project-002",
+    "role": "behavioral",
+    "difficulty": "medium",
+    "topic": "Project Experience",
+    "question": "请介绍一个你主导或深度参与的项目，并说明你的具体贡献。",
+    "expectedPoints": [
+      "能交代项目背景和目标",
+      "能说明个人职责和关键行动",
+      "能给出结果、数据或影响",
+      "能复盘经验和不足"
+    ],
+    "followUps": [
+      "这个项目里最难的决策是什么？",
+      "你如何证明这个项目是成功的？"
+    ],
+    "tags": [
+      "项目经验",
+      "STAR",
+      "结果导向"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-teamwork-003",
+    "role": "behavioral",
+    "difficulty": "easy",
+    "topic": "Teamwork",
+    "question": "请讲一次你和团队协作完成目标的经历。",
+    "expectedPoints": [
+      "能说明共同目标和协作对象",
+      "能体现沟通、对齐和推进方法",
+      "能说明个人贡献",
+      "能给出协作结果或反思"
+    ],
+    "followUps": [
+      "你具体承担了什么角色？",
+      "如果重新来一次，你会如何改进协作方式？"
+    ],
+    "tags": [
+      "团队协作",
+      "沟通",
+      "影响力"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-conflict-004",
+    "role": "behavioral",
+    "difficulty": "medium",
+    "topic": "Conflict",
+    "question": "请讲一次工作中出现分歧或冲突的经历，以及你如何处理。",
+    "expectedPoints": [
+      "能客观描述冲突背景",
+      "能说明如何倾听和澄清事实",
+      "能给出达成一致或推进决策的方法",
+      "能体现复盘和成长"
+    ],
+    "followUps": [
+      "你如何保证沟通没有升级成情绪对抗？",
+      "你最后如何确认对方理解了你的表达？"
+    ],
+    "tags": [
+      "冲突处理",
+      "沟通",
+      "复盘"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-learning-005",
+    "role": "behavioral",
+    "difficulty": "easy",
+    "topic": "Learning Ability",
+    "question": "请讲一个你为了项目快速学习新技能的例子。",
+    "expectedPoints": [
+      "能说明学习或问题背景",
+      "能描述具体学习和验证方法",
+      "能把学习应用到实际任务",
+      "能体现复盘和持续改进"
+    ],
+    "followUps": [
+      "你如何判断自己已经学到可以交付的程度？",
+      "这次经历之后，你改变了哪些做事方式？"
+    ],
+    "tags": [
+      "学习能力",
+      "成长",
+      "复盘"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-star-006",
+    "role": "behavioral",
+    "difficulty": "easy",
+    "topic": "STAR Method",
+    "question": "请用 STAR 结构讲一个你最近比较有成就感的案例。",
+    "expectedPoints": [
+      "Situation 背景清楚",
+      "Task 目标具体",
+      "Action 突出个人行动",
+      "Result 包含结果或影响"
+    ],
+    "followUps": [
+      "你的回答里哪一部分最能体现个人贡献？",
+      "结果能否再量化一些？"
+    ],
+    "tags": [
+      "STAR",
+      "表达结构",
+      "结果"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-strength-007",
+    "role": "behavioral",
+    "difficulty": "easy",
+    "topic": "Strength / Weakness",
+    "question": "你认为自己最适合这个岗位的一项优势是什么？",
+    "expectedPoints": [
+      "能给出具体而非空泛的描述",
+      "能用证据或案例支撑",
+      "能连接岗位要求",
+      "能体现自我认知和改进动作"
+    ],
+    "followUps": [
+      "能举一个具体例子证明吗？",
+      "你如何避免这个弱点影响交付？"
+    ],
+    "tags": [
+      "优势劣势",
+      "自我认知",
+      "成长"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-weakness-008",
+    "role": "behavioral",
+    "difficulty": "medium",
+    "topic": "Strength / Weakness",
+    "question": "请说一个你正在改进的弱点。",
+    "expectedPoints": [
+      "能给出具体而非空泛的描述",
+      "能用证据或案例支撑",
+      "能连接岗位要求",
+      "能体现自我认知和改进动作"
+    ],
+    "followUps": [
+      "能举一个具体例子证明吗？",
+      "你如何避免这个弱点影响交付？"
+    ],
+    "tags": [
+      "优势劣势",
+      "自我认知",
+      "成长"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-motivation-009",
+    "role": "behavioral",
+    "difficulty": "easy",
+    "topic": "Career Motivation",
+    "question": "你为什么对这个岗位或方向感兴趣？",
+    "expectedPoints": [
+      "动机具体且和岗位相关",
+      "能说明长期发展方向",
+      "能体现对团队和业务的理解",
+      "避免只谈薪资或头衔"
+    ],
+    "followUps": [
+      "这个岗位最吸引你的部分是什么？",
+      "你会如何衡量自己这一年的成长？"
+    ],
+    "tags": [
+      "职业动机",
+      "团队匹配",
+      "成长规划"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-pressure-010",
+    "role": "behavioral",
+    "difficulty": "medium",
+    "topic": "Project Experience",
+    "question": "请讲一次你在压力下推进项目交付的经历。",
+    "expectedPoints": [
+      "能交代项目背景和目标",
+      "能说明个人职责和关键行动",
+      "能给出结果、数据或影响",
+      "能复盘经验和不足"
+    ],
+    "followUps": [
+      "这个项目里最难的决策是什么？",
+      "你如何证明这个项目是成功的？"
+    ],
+    "tags": [
+      "项目经验",
+      "STAR",
+      "结果导向"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-failure-011",
+    "role": "behavioral",
+    "difficulty": "medium",
+    "topic": "Learning Ability",
+    "question": "请讲一次失败或结果不理想的经历，以及你学到了什么。",
+    "expectedPoints": [
+      "能说明学习或问题背景",
+      "能描述具体学习和验证方法",
+      "能把学习应用到实际任务",
+      "能体现复盘和持续改进"
+    ],
+    "followUps": [
+      "你如何判断自己已经学到可以交付的程度？",
+      "这次经历之后，你改变了哪些做事方式？"
+    ],
+    "tags": [
+      "学习能力",
+      "成长",
+      "复盘"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-feedback-012",
+    "role": "behavioral",
+    "difficulty": "medium",
+    "topic": "Teamwork",
+    "question": "请描述一次跨职能协作经历。",
+    "expectedPoints": [
+      "能说明共同目标和协作对象",
+      "能体现沟通、对齐和推进方法",
+      "能说明个人贡献",
+      "能给出协作结果或反思"
+    ],
+    "followUps": [
+      "你具体承担了什么角色？",
+      "如果重新来一次，你会如何改进协作方式？"
+    ],
+    "tags": [
+      "团队协作",
+      "沟通",
+      "影响力"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-leadership-013",
+    "role": "behavioral",
+    "difficulty": "medium",
+    "topic": "Teamwork",
+    "question": "请讲一次你在没有正式权限的情况下影响他人的经历。",
+    "expectedPoints": [
+      "能说明共同目标和协作对象",
+      "能体现沟通、对齐和推进方法",
+      "能说明个人贡献",
+      "能给出协作结果或反思"
+    ],
+    "followUps": [
+      "你具体承担了什么角色？",
+      "如果重新来一次，你会如何改进协作方式？"
+    ],
+    "tags": [
+      "团队协作",
+      "沟通",
+      "影响力"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-ambiguity-014",
+    "role": "behavioral",
+    "difficulty": "medium",
+    "topic": "Learning Ability",
+    "question": "面对需求不清晰的任务时，你通常如何推进？",
+    "expectedPoints": [
+      "能说明学习或问题背景",
+      "能描述具体学习和验证方法",
+      "能把学习应用到实际任务",
+      "能体现复盘和持续改进"
+    ],
+    "followUps": [
+      "你如何判断自己已经学到可以交付的程度？",
+      "这次经历之后，你改变了哪些做事方式？"
+    ],
+    "tags": [
+      "学习能力",
+      "成长",
+      "复盘"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-priority-015",
+    "role": "behavioral",
+    "difficulty": "easy",
+    "topic": "Project Experience",
+    "question": "请讲一个你主动发现问题并推动解决的案例。",
+    "expectedPoints": [
+      "能交代项目背景和目标",
+      "能说明个人职责和关键行动",
+      "能给出结果、数据或影响",
+      "能复盘经验和不足"
+    ],
+    "followUps": [
+      "这个项目里最难的决策是什么？",
+      "你如何证明这个项目是成功的？"
+    ],
+    "tags": [
+      "项目经验",
+      "STAR",
+      "结果导向"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-crossfunctional-016",
+    "role": "behavioral",
+    "difficulty": "medium",
+    "topic": "Teamwork",
+    "question": "请分享一次你收到比较尖锐反馈后的处理方式。",
+    "expectedPoints": [
+      "能说明共同目标和协作对象",
+      "能体现沟通、对齐和推进方法",
+      "能说明个人贡献",
+      "能给出协作结果或反思"
+    ],
+    "followUps": [
+      "你具体承担了什么角色？",
+      "如果重新来一次，你会如何改进协作方式？"
+    ],
+    "tags": [
+      "团队协作",
+      "沟通",
+      "影响力"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-ownership-017",
+    "role": "behavioral",
+    "difficulty": "medium",
+    "topic": "Project Experience",
+    "question": "当多个任务都很紧急时，你通常如何排序和取舍？",
+    "expectedPoints": [
+      "能交代项目背景和目标",
+      "能说明个人职责和关键行动",
+      "能给出结果、数据或影响",
+      "能复盘经验和不足"
+    ],
+    "followUps": [
+      "这个项目里最难的决策是什么？",
+      "你如何证明这个项目是成功的？"
+    ],
+    "tags": [
+      "项目经验",
+      "STAR",
+      "结果导向"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-values-018",
+    "role": "behavioral",
+    "difficulty": "easy",
+    "topic": "Career Motivation",
+    "question": "什么样的团队环境能让你发挥得最好？",
+    "expectedPoints": [
+      "动机具体且和岗位相关",
+      "能说明长期发展方向",
+      "能体现对团队和业务的理解",
+      "避免只谈薪资或头衔"
+    ],
+    "followUps": [
+      "这个岗位最吸引你的部分是什么？",
+      "你会如何衡量自己这一年的成长？"
+    ],
+    "tags": [
+      "职业动机",
+      "团队匹配",
+      "成长规划"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-communication-019",
+    "role": "behavioral",
+    "difficulty": "medium",
+    "topic": "Conflict",
+    "question": "请讲一次你需要向非专业同学解释复杂问题的经历。",
+    "expectedPoints": [
+      "能客观描述冲突背景",
+      "能说明如何倾听和澄清事实",
+      "能给出达成一致或推进决策的方法",
+      "能体现复盘和成长"
+    ],
+    "followUps": [
+      "你如何保证沟通没有升级成情绪对抗？",
+      "你最后如何确认对方理解了你的表达？"
+    ],
+    "tags": [
+      "冲突处理",
+      "沟通",
+      "复盘"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  },
+  {
+    "id": "behavioral-goal-020",
+    "role": "behavioral",
+    "difficulty": "easy",
+    "topic": "Career Motivation",
+    "question": "未来一年你最想达成的一个职业目标是什么？",
+    "expectedPoints": [
+      "动机具体且和岗位相关",
+      "能说明长期发展方向",
+      "能体现对团队和业务的理解",
+      "避免只谈薪资或头衔"
+    ],
+    "followUps": [
+      "这个岗位最吸引你的部分是什么？",
+      "你会如何衡量自己这一年的成长？"
+    ],
+    "tags": [
+      "职业动机",
+      "团队匹配",
+      "成长规划"
+    ],
+    "source": "seed",
+    "sourceNote": "Demo seed data, manually structured from common interview knowledge points"
+  }
+]

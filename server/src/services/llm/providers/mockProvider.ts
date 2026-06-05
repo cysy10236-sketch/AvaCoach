@@ -5,6 +5,7 @@ import {
 } from "../../../mocks/interviewMock.js";
 import type {
   InterviewRole,
+  LlmEvaluationContext,
   Message,
   NextInterviewResponse,
   ReportInterviewResponse,
@@ -25,6 +26,7 @@ export const mockProvider: LlmProvider = {
     role: InterviewRole,
     answer: string,
     history: Message[],
+    _context?: LlmEvaluationContext,
   ): Promise<NextInterviewResponse> {
     return {
       ...createNextResponse(role, answer, history),

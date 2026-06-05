@@ -76,6 +76,14 @@ Credential boundary:
 - The frontend must never receive the Console API key.
 - `.env` files are ignored by git.
 
+Changing the avatar appearance:
+
+- Copy the new Avatar ID from the Spatius role/avatar library.
+- Put it in `client/.env` as `VITE_SPATIUS_AVATAR_ID=`.
+- Restart `npm run dev`.
+- Click Connect Avatar again.
+- Do not commit the real Avatar ID if it should stay private, and do not paste it into docs.
+
 Why this matters:
 
 Any `VITE_*` value is bundled into browser assets and can be inspected by users. The Spatius Console API key is a secret, so it must stay behind the Express server. The browser should only receive short-lived Session Tokens and public identifiers.

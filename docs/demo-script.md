@@ -11,16 +11,20 @@
 7. Wait for the real Avatar to appear and the status to reach Avatar Connected.
 8. Click Send Sample Audio and explain that this is the official SDK validation PCM, used only to verify AvatarKit rendering, Motion Server connection, and lip-sync.
 9. Select a role, such as Frontend Engineer.
-10. Click Start Interview.
-11. Explain that the interviewer reply comes from the LLM provider, the voice comes from Volcano TTS or another backend TTS provider, and Spatius drives mouth motion from the PCM audio.
-12. Type a concise candidate answer.
-13. Click Submit Answer.
-14. Show the candidate bubble, AI follow-up, score, feedback, and suggestion.
-15. Repeat until round 3 or until the UI suggests ending.
-16. Click End Interview.
-17. Show the final report: Overall Score, Strengths, Weaknesses, Suggestions.
-18. Explain fallback behavior and the next plans: ASR voice answers and a stronger IT question bank.
-19. Click Reset Demo to prove the flow is reusable.
+10. Set Question Source to IT Question Bank.
+11. Choose Difficulty, such as Medium.
+12. Choose a Topic, such as React.
+13. Click Start Interview.
+14. Explain that the first question comes from the structured seed bank, while follow-up and scoring can still use the LLM with expected points as context.
+15. Explain that the voice comes from Volcano TTS or another backend TTS provider, and Spatius drives mouth motion from the PCM audio.
+16. Type a concise candidate answer.
+17. Click Submit Answer.
+18. Show the candidate bubble, AI follow-up, score, feedback, covered points, missing points, and improvement tips.
+19. Repeat until round 3 or until the UI suggests ending.
+20. Click End Interview.
+21. Show the final report: Overall Score, Strengths, Weaknesses, Suggestions, Strong Topics, Weak Topics, Missed Knowledge Points, and Recommended Practice Topics.
+22. Explain fallback behavior and the next plans: ASR voice answers and larger enterprise/JD/custom question banks.
+23. Click Reset Demo to prove the flow is reusable.
 
 ## Live Startup
 
@@ -54,6 +58,14 @@ Say:
 
 ```text
 The same interview endpoints can use OpenAI when OPENAI_API_KEY is configured. If the key is missing, the model fails, or JSON parsing fails, the backend automatically returns mock interview logic. The UI shows AI Mode or Mock Fallback Mode based on the response source.
+```
+
+## Explaining The IT Question Bank
+
+Say:
+
+```text
+AvaCoach now supports two question sources: AI Generated and IT Question Bank. The question bank is structured seed data with role, topic, difficulty, expected points, follow-ups, and tags. This changes the product from a random AI Q&A demo into a controllable interview training system. The seed bank is not scraped from a restricted site; it is manually structured demo data inspired by common public interview topics and can later be replaced by an enterprise-owned question bank, JD-generated questions, or user-customized questions.
 ```
 
 ## Explaining TTS Providers
@@ -97,6 +109,10 @@ A: The official quickstart sample PCM isolates the Spatius path: App ID, Avatar 
 Q: How does real interview speech drive the avatar?
 
 A: The interviewer replyText is sent to backend TTS. The frontend decodes the returned audio, mixes it to mono, resamples to 16 kHz, converts it to PCM16, and calls AvatarKit `controller.send(pcm, true)`. Browser speech fallback is only an audible fallback and does not move the avatar mouth.
+
+Q: How are expectedPoints used?
+
+A: In question bank mode, each question has expectedPoints. The backend compares the candidate answer against those points and returns coveredPoints, missingPoints, and improvementTips. The LLM also receives the expected points as context so its feedback and follow-up can stay aligned with the structured rubric.
 
 Q: What changed after integrating Volcano TTS?
 

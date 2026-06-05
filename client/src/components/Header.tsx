@@ -13,10 +13,18 @@ function Header({ provider, source }: HeaderProps) {
         <h1>AI Digital Human Mock Interviewer</h1>
       </div>
       <span className="mode-pill">
-        {source === 'llm' ? `AI Mode: ${formatProvider(provider)}` : 'Mock Fallback Mode'}
+        {formatMode(source, provider)}
       </span>
     </header>
   )
+}
+
+function formatMode(source: ResponseSource, provider: LlmProvider) {
+  if (source === 'bank') {
+    return 'IT 题库模式'
+  }
+
+  return source === 'llm' ? `AI 模式: ${formatProvider(provider)}` : 'Mock fallback 模式'
 }
 
 function formatProvider(provider: LlmProvider) {

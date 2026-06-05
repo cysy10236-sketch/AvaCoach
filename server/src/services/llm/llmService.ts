@@ -1,6 +1,7 @@
 import { env } from "../../config/env.js";
 import type {
   InterviewRole,
+  LlmEvaluationContext,
   Message,
   NextInterviewResponse,
   ReportInterviewResponse,
@@ -23,9 +24,10 @@ export async function generateFollowUp(
   role: InterviewRole,
   answer: string,
   history: Message[],
+  context?: LlmEvaluationContext,
 ): Promise<NextInterviewResponse> {
   return withFallback("next", (provider) =>
-    provider.generateFollowUp(role, answer, history),
+    provider.generateFollowUp(role, answer, history, context),
   );
 }
 

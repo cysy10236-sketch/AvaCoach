@@ -18,48 +18,69 @@ function FeedbackPanel({
       <div className="panel-heading">
         <div>
           <p className="eyebrow">Evaluation</p>
-          <h2>Feedback</h2>
+          <h2>面试反馈</h2>
         </div>
       </div>
 
       <div className="score-card">
-        <span>Current Score</span>
+        <span>当前评分</span>
         <strong>{currentFeedback ? currentFeedback.score : '--'}</strong>
-        <p>{currentFeedback ? 'Latest answer score' : 'Score appears after answer'}</p>
+        <p>{currentFeedback ? '最近一轮回答评分' : '提交回答后显示评分'}</p>
       </div>
 
       <div className="meta-grid">
         <div>
-          <span>Round</span>
+          <span>轮次</span>
           <strong>{round}/3</strong>
         </div>
         <div>
-          <span>Status</span>
-          <strong>{canEnd ? 'Ready to end' : 'In progress'}</strong>
+          <span>状态</span>
+          <strong>{canEnd ? '可结束' : '进行中'}</strong>
         </div>
       </div>
 
       <div className="feedback-copy">
-        <h3>Latest Feedback</h3>
-        <p>{currentFeedback?.feedback ?? 'Submit an answer to receive mock feedback.'}</p>
-        <h3>Suggestion</h3>
-        <p>{currentFeedback?.suggestion ?? 'Ava will suggest how to improve your response.'}</p>
+        <h3>最近反馈</h3>
+        <p>{currentFeedback?.feedback ?? '提交回答后，Ava 会给出面试反馈。'}</p>
+        <h3>改进建议</h3>
+        <p>{currentFeedback?.suggestion ?? 'Ava 会提示你如何优化回答结构和内容。'}</p>
+        {currentFeedback?.knowledgeFeedback ? (
+          <div className="knowledge-feedback">
+            <List title="已覆盖要点" items={currentFeedback.knowledgeFeedback.coveredPoints} />
+            <List title="缺失要点" items={currentFeedback.knowledgeFeedback.missingPoints} />
+            <List title="改进建议" items={currentFeedback.knowledgeFeedback.improvementTips} />
+          </div>
+        ) : null}
       </div>
 
       <div className="report-summary">
-        <h3>Final Report</h3>
+        <h3>最终报告</h3>
         {report ? (
           <>
             <div className="overall-score">
-              <span>Overall Score</span>
+              <span>综合评分</span>
               <strong>{report.overallScore}</strong>
             </div>
-            <List title="Strengths" items={report.strengths} />
-            <List title="Weaknesses" items={report.weaknesses} />
-            <List title="Suggestions" items={report.suggestions} />
+            <List title="优势" items={report.strengths} />
+            <List title="不足" items={report.weaknesses} />
+            <List title="建议" items={report.suggestions} />
+            {report.bankReport ? (
+              <>
+                <List title="优势知识点" items={report.bankReport.strongTopics} />
+                <List title="薄弱知识点" items={report.bankReport.weakTopics} />
+                <List
+                  title="遗漏知识点"
+                  items={report.bankReport.missedKnowledgePoints}
+                />
+                <List
+                  title="推荐练习方向"
+                  items={report.bankReport.recommendedPracticeTopics}
+                />
+              </>
+            ) : null}
           </>
         ) : (
-          <p>End the interview to generate a final mock report.</p>
+          <p>结束面试后会生成最终报告。</p>
         )}
       </div>
     </aside>

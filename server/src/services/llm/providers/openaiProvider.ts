@@ -1,6 +1,7 @@
 import { env } from "../../../config/env.js";
 import type {
   InterviewRole,
+  LlmEvaluationContext,
   Message,
   NextInterviewResponse,
   ReportInterviewResponse,
@@ -81,9 +82,10 @@ export const openaiProvider: LlmProvider = {
     role: InterviewRole,
     answer: string,
     history: Message[],
+    context?: LlmEvaluationContext,
   ): Promise<NextInterviewResponse> {
     const data = await requestJson<NextInterviewResponse>(
-      buildNextPrompt(role, answer, history),
+      buildNextPrompt(role, answer, history, context),
       "avacoach_next_question",
       nextSchema,
     );
