@@ -1,0 +1,71 @@
+:root {
+  --text: #25313a;
+  --text-h: #101820;
+  --ink: #193236;
+  --muted: #687782;
+  --bg: #eef4f5;
+  --surface: rgba(255, 255, 255, 0.92);
+  --border: #d8e4e7;
+  --shadow-sm: 0 18px 50px rgba(35, 62, 70, 0.08);
+  --shadow-xs: 0 8px 22px rgba(35, 62, 70, 0.06);
+  --sans: Inter, ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: Inter, ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  font: 16px/145% var(--sans);
+  letter-spacing: 0;
+  color: var(--text);
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.88), rgba(238, 246, 247, 0.62)),
+    var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--heading);
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 30px;
+  line-height: 112%;
+  margin: 0;
+}
+
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  h1 {
+    font-size: 24px;
+  }
+
+  h2 {
+    font-size: 21px;
+  }
+}
