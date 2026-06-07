@@ -17,59 +17,59 @@ const roleProfiles: Record<
   }
 > = {
   frontend: {
-    label: "Frontend Engineer",
+    label: "前端工程师",
     opening:
-      "你好，我是 AvaCoach 的数字人面试官。今天我们会围绕前端工程能力、项目经验和沟通表达做一轮模拟面试。",
+      "你好，我是 AvaCoach 的数字人面试官。今天我们会围绕前端工程能力、项目经验和技术表达做一轮模拟面试。",
     firstQuestion:
       "请你先做一个简短的自我介绍，并说明你为什么适合前端工程师这个岗位。",
     followUps: [
-      "你的回答提到了前端项目经验。请进一步说明你如何处理性能优化问题？",
-      "如果一个复杂页面出现交互卡顿，你会如何定位并拆解问题？",
-      "请分享一次你推动组件化、工程化或跨端体验改进的经历。",
+      "你能结合一个实际项目，说说你如何定位并优化前端性能问题吗？",
+      "如果一个复杂页面出现交互卡顿，你会如何拆解和排查？",
+      "你在组件化或工程化方面做过哪些改进，最后带来了什么结果？",
     ],
     keywords: ["react", "typescript", "性能", "组件", "工程化", "优化", "用户体验"],
   },
   backend: {
-    label: "Backend Engineer",
+    label: "后端工程师",
     opening:
-      "Hello, I am AvaCoach. Today we will focus on backend engineering, API design, data consistency, reliability, and system design.",
+      "你好，我是 AvaCoach 的数字人面试官。今天我们会重点看后端工程、接口设计、数据一致性和系统可靠性。",
     firstQuestion:
-      "Please briefly introduce yourself and explain why you are a good fit for a backend engineering role.",
+      "请你先做一个简短的自我介绍，并说明你为什么适合后端工程师这个岗位。",
     followUps: [
-      "You mentioned backend project experience. Please describe how you designed a reliable API boundary.",
-      "If a production endpoint becomes slow, how would you locate the bottleneck and reduce impact?",
-      "Please share a time you improved database, cache, or service reliability in a real project.",
+      "你能结合一个项目，说说你如何设计稳定的 API 边界吗？",
+      "如果线上接口突然变慢，你会如何定位瓶颈并降低影响？",
+      "请分享一次你优化数据库、缓存或服务可靠性的经历。",
     ],
     keywords: ["node", "api", "database", "cache", "redis", "reliability", "system", "error"],
   },
   product: {
-    label: "Product Manager",
+    label: "产品经理",
     opening:
       "你好，我是 AvaCoach 的数字人面试官。今天我们会关注产品判断、需求分析和跨团队推进能力。",
     firstQuestion:
       "请你先做一个简短的自我介绍，并说明你为什么适合产品经理这个岗位。",
     followUps: [
-      "你的回答提到了产品经历。请说明你如何判断一个需求是否值得做？",
-      "当业务目标和用户体验发生冲突时，你会如何做取舍？",
+      "你能举例说明你如何判断一个需求是否值得做吗？",
+      "当业务目标和用户体验发生冲突时，你通常如何做取舍？",
       "请分享一次你通过数据或用户反馈推动产品迭代的经历。",
     ],
     keywords: ["用户", "需求", "数据", "指标", "优先级", "增长", "体验"],
   },
   ai: {
-    label: "AI Engineer",
+    label: "AI 工程师",
     opening:
       "你好，我是 AvaCoach 的数字人面试官。今天我们会围绕 AI 工程、模型应用和系统落地展开。",
     firstQuestion:
       "请你先做一个简短的自我介绍，并说明你为什么适合 AI 工程师这个岗位。",
     followUps: [
-      "你的回答提到了 AI 项目经验。请进一步说明你如何评估模型效果？",
+      "你能结合一个 AI 项目，说说你如何评估模型效果吗？",
       "如果线上模型回答不稳定，你会如何定位并改进？",
       "请分享一次你把模型能力集成到真实产品流程中的经历。",
     ],
     keywords: ["模型", "prompt", "评估", "数据", "向量", "rag", "部署", "推理"],
   },
   behavioral: {
-    label: "General Behavioral",
+    label: "通用行为面试",
     opening:
       "你好，我是 AvaCoach 的数字人面试官。今天我们会做一轮通用行为面试，重点关注经历表达和复盘能力。",
     firstQuestion:
@@ -90,6 +90,9 @@ export function createStartResponse(role: InterviewRole): StartInterviewResponse
     replyText: `${profile.opening} ${profile.firstQuestion}`,
     question: profile.firstQuestion,
     stage: "asking",
+    status: "in_progress",
+    nextAllowed: true,
+    reportReady: false,
   };
 }
 
@@ -103,16 +106,19 @@ export function createNextResponse(
   const roundIndex = Math.max(0, candidateRounds - 1);
   const score = scoreAnswer(answer, profile.keywords);
   const shouldEnd = candidateRounds >= 3;
-  const nextQuestion = shouldEnd
-    ? "这一轮问题已经完成。你可以点击 End Interview 查看完整 mock 评估报告。"
-    : profile.followUps[roundIndex % profile.followUps.length];
+  const nextQuestion = createNextQuestion(answer, profile.followUps[roundIndex % profile.followUps.length]);
 
   return {
-    replyText: nextQuestion,
+    replyText: shouldEnd
+      ? "这轮回答我已经了解了。当前练习轮次已经完成，请点击 End Interview 查看完整报告。"
+      : nextQuestion,
     score,
     feedback: createFeedback(score, answer),
     suggestion: createSuggestion(score, answer),
     shouldEnd,
+    status: shouldEnd ? "ended" : "in_progress",
+    nextAllowed: !shouldEnd,
+    reportReady: shouldEnd,
   };
 }
 
@@ -147,7 +153,26 @@ export function createReportResponse(
       "多补充项目数据、决策依据和最终结果",
       "回答结尾主动总结和岗位能力的匹配点",
     ],
+    status: "ended",
+    nextAllowed: false,
+    reportReady: true,
   };
+}
+
+function createNextQuestion(answer: string, defaultQuestion: string): string {
+  if (isCompensationQuestion(answer)) {
+    return "薪资和福利通常会在 HR 或后续流程里详细沟通。我们先回到当前技术面试：请你结合一个项目，说说你在核心技术问题上的具体处理过程。";
+  }
+
+  if (isQuestionChangeRequest(answer)) {
+    return "可以，我们换一个相关但更具体的问题。请你从最近做过的项目里选一个模块，说明你负责的技术决策和最终结果。";
+  }
+
+  if (isShortUnknownAnswer(answer)) {
+    return "没关系，我们换一个更基础的角度。你可以先说说这个知识点在实际项目里通常解决什么问题。";
+  }
+
+  return `你的回答方向是成立的，不过如果能结合具体场景会更完整。我继续追问一个相关问题：${defaultQuestion}`;
 }
 
 function scoreAnswer(answer: string, keywords: string[]): number {
@@ -172,10 +197,10 @@ function createFeedback(score: number, answer: string): string {
   }
 
   if (answer.trim().length < 80) {
-    return "回答方向是成立的，但信息量偏少，面试官还无法判断你的真实贡献。";
+    return "回答方向可以继续展开，目前信息量偏少，面试官还难以判断你的真实贡献。";
   }
 
-  return "回答比较完整，但缺少更具体的项目细节、行动过程和结果证明。";
+  return "回答比较完整，但还缺少更具体的项目细节、行动过程和结果证明。";
 }
 
 function createSuggestion(score: number, answer: string): string {
@@ -188,4 +213,16 @@ function createSuggestion(score: number, answer: string): string {
   }
 
   return "建议使用 STAR 结构补充背景、行动和结果，并突出你个人负责的部分。";
+}
+
+function isCompensationQuestion(answer: string): boolean {
+  return /薪资|工资|待遇|福利|加班|offer|hr/i.test(answer);
+}
+
+function isQuestionChangeRequest(answer: string): boolean {
+  return /换.*题|换.*问题|换一.*道|不太熟|不会|没做过/i.test(answer) && answer.length > 8;
+}
+
+function isShortUnknownAnswer(answer: string): boolean {
+  return /^(不会|不知道|不清楚|没做过|不了解|不会。|不知道。|不清楚。)$/i.test(answer.trim());
 }

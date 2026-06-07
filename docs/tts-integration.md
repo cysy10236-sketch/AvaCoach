@@ -2,64 +2,54 @@
 
 ## Role In AvaCoach
 
-TTS turns AvaCoach interviewer text into spoken audio. In the current demo, backend TTS audio can also drive Spatius AvatarKit lip-sync when the real Avatar runtime is connected.
+TTS 将面试官文本转为语音。当前已接入 Volcano TTS V3 HTTP Chunked，输出 16kHz mono PCM16，直接驱动 Spatius AvatarKit 口型同步。
 
 ## Current Chain
 
-```text
-replyText
--> /api/tts
--> compressed provider audio
--> browser decode
--> 16 kHz mono PCM16
--> AvatarKit controller.send(...)
--> avatar lip-sync
+```
+interviewer replyText
+→ POST /api/tts
+→ Volcano V3 HTTP Chunked (或 OpenAI / Mock)
+→ PCM16 16kHz mono (Volcano 直接输出)
+→ AvatarKit controller.send(pcm, true)
+→ 数字人口型同步 + 语音播放
 ```
 
-When Volcano TTS is selected and configured, the backend already returns `audio/pcm; rate=16000; channels=1; encoding=signed-integer; bits=16`, so the frontend can pass it through the AvatarKit PCM path without MP3/WAV decoding.
+## Provider Modes
 
-The frontend speaks interviewer messages after:
+```bash
+TTS_PROVIDER=volcano  # 火山 V3 HTTP Chunked（推荐中文面试官）
+TTS_PROVIDER=openai   # OpenAI TTS
+TTS_PROVIDER=mock     # 强制 Browser Speech / Silent Text fallback
+```
 
-- Starting the interview.
-- Receiving a follow-up after candidate answers.
-- Generating the final report summary.
+### Volcano V3 HTTP Chunked
 
-Candidate answers are never spoken back.
+- Endpoint: `https://openspeech.bytedance.com/api/v3/tts/unidirectional`
+- Auth: `X-Api-Key` + `X-Api-Resource-Id` + `X-Api-Request-Id`（仅后端）
+- Response: HTTP chunked JSON
+- `code=0` chunks: base64 音频数据
+- `code=20000000` + `message=ok`: 成功结束事件
+- 后端解码所有 base64 chunk → 拼接为一个 `audio/pcm` buffer
+- 输出: `audio/pcm; rate=16000; channels=1; encoding=signed-integer; bits=16`
 
-## Backend Credential Boundary
+### OpenAI TTS
 
-The TTS provider is called only from the Express backend. `OPENAI_API_KEY` stays in `server/.env` and is never exposed to the browser. The frontend only receives audio bytes or fallback metadata.
+- 模型: `gpt-4o-mini-tts`
+- 返回 MP3 等压缩格式
+- 前端需 decode → mix to mono → resample 16kHz → PCM16
 
 ## Environment Variables
 
 ```bash
-TTS_PROVIDER=openai
-TTS_MODEL=
-TTS_VOICE=
-```
-
-`TTS_MODEL` and `TTS_VOICE` can be empty. The backend currently defaults to:
-
-- model: `gpt-4o-mini-tts`
-- voice: `alloy`
-
-`TTS_VOICE` can be changed to a voice that better matches the selected interviewer avatar, such as `alloy`, `nova`, or `shimmer`, depending on provider support.
-
-Provider options:
-
-```bash
-TTS_PROVIDER=openai
 TTS_PROVIDER=volcano
-TTS_PROVIDER=mock
-```
+TTS_MODEL=gpt-4o-mini-tts
+TTS_VOICE=alloy
 
-OpenAI is a runnable provider. Mock forces fallback. Volcano/Doubao now uses the V3 HTTP Chunked unidirectional TTS endpoint when enabled and configured.
-
-Volcano / Doubao configuration:
-
-```bash
-VOLCANO_TTS_ENABLED=false
+# Volcano TTS
+VOLCANO_TTS_ENABLED=true
 VOLCANO_TTS_PROVIDER=volcano_bidirection
+VOLCANO_TTS_API_KEY=
 VOLCANO_TTS_RESOURCE_ID=seed-tts-2.0
 VOLCANO_TTS_VOICE_TYPE=zh_female_vv_uranus_bigtts
 VOLCANO_TTS_FORMAT=pcm
@@ -70,76 +60,40 @@ VOLCANO_TTS_ENABLE_LANGUAGE_DETECTOR=false
 VOLCANO_ACCESS_KEY_ID=
 VOLCANO_SECRET_ACCESS_KEY=
 VOLCANO_APP_ID=
-VOLCANO_TTS_API_KEY=
 VOLCANO_TTS_ENDPOINT=https://openspeech.bytedance.com/api/v3/tts/unidirectional
 ```
 
-Volcano V3 behavior:
-
-- Endpoint: `https://openspeech.bytedance.com/api/v3/tts/unidirectional`.
-- Auth headers stay backend-only: `X-Api-Key`, `X-Api-Resource-Id`, `X-Api-Request-Id`.
-- The response is HTTP chunked JSON.
-- Chunks with `code=0` and `data` contain base64 audio.
-- The success end event is `code=20000000` and `message=ok`.
-- AvaCoach decodes all base64 audio chunks and concatenates them into one backend audio response.
-- Successful Volcano output is returned to the frontend as 16 kHz mono PCM16.
-- Errors such as speaker permission issues return fallback JSON with safe provider/message/code context and no secret values.
-
 ## AvatarKit Lip-Sync Path
 
-Backend TTS audio is not blindly sent directly to AvatarKit. Provider audio may be MP3 or another compressed format, while AvatarKit expects PCM16 mono at 16 kHz. Volcano's configured output already matches that format; other formats are decoded and converted in the browser.
+```
+Backend TTS → 16kHz mono PCM16 (Volcano) 或 压缩格式 (OpenAI)
+              ↓
+         压缩格式 → AudioContext.decodeAudioData
+              → mix to mono
+              → OfflineAudioContext resample 16kHz
+              → Float32 → PCM16 LE ArrayBuffer
+              ↓
+         controller.send(pcm, true)
+              ↓
+         Spatius AvatarKit 口型动画
+```
 
-Frontend conversion steps:
+Volcano TTS 输出已匹配 AvatarKit 所需格式，可直接透传为 ArrayBuffer。
 
-1. Fetch audio from `/api/tts`.
-2. If the content type is 16 kHz mono PCM16, use the raw bytes as an `ArrayBuffer`.
-3. Otherwise decode the audio bytes with `AudioContext.decodeAudioData`.
-4. Mix all channels down to mono.
-5. Resample to 16 kHz with `OfflineAudioContext`.
-6. Convert Float32 samples to little-endian PCM16.
-7. Send the resulting `ArrayBuffer` to `avatarView.controller.send(pcm, true)`.
-
-Only audio sent through AvatarKit can drive lip-sync. Browser `SpeechSynthesis` and normal audio playback do not drive Spatius mouth motion.
-
-Volcano TTS does not currently return mouth-shape data in this integration. Mouth motion is generated by Spatius AvatarKit from the converted PCM audio.
+**重要**：只有通过 `controller.send()` 发送的 PCM 才能驱动口型。Browser SpeechSynthesis 和 `<audio>` 播放不会驱动 Avatar 嘴型。
 
 ## Fallback Strategy
 
-1. Backend TTS audio
-   - `POST /api/tts` returns audio when `OPENAI_API_KEY` is configured and the provider call succeeds.
-   - `TTS_PROVIDER=volcano` returns audio when `VOLCANO_TTS_ENABLED=true`, `VOLCANO_TTS_API_KEY` is configured, and the V3 endpoint succeeds.
-
-2. Browser speech fallback
-   - If backend TTS is unavailable, the frontend tries `window.speechSynthesis`.
-   - Browser speech does not drive avatar lip-sync.
-
-3. Silent text mode
-   - If browser speech also fails or is unsupported, AvaCoach keeps displaying text and the interview flow continues.
-
-## Spatius Avatar SDK Connection
-
-The Avatar SDK phase now reuses backend TTS output:
-
-1. Generate audio from interviewer `replyText`.
-2. Convert it to AvatarKit-compatible PCM.
-3. Send it through AvatarKit `controller.send`.
-4. Map AvatarKit conversation callbacks to AvaCoach speaking/listening UI states.
-5. Keep browser speech and silent text fallback when SDK audio driving fails.
-
-This is now connected to the interview flow:
-
-- Start Interview interviewer opening can drive AvatarKit lip-sync.
-- Submit Answer follow-up questions can drive AvatarKit lip-sync.
-- End Interview speaks a short report-ready summary instead of the full report.
-
-The official `quickstart_voice.pcm` file remains in the product only as an SDK validation tool. It proves AvatarKit rendering, Motion Server connection, PCM send, and lip-sync independently from the LLM/TTS product path.
+```
+Volcano TTS 成功 → PCM16 → AvatarKit lip-sync ✅
+TTS 失败         → Browser SpeechSynthesis → 不驱动口型
+Browser 不支持   → Silent Text Mode → 纯文本面试
+```
 
 ## Current Limits
 
-- No audio caching.
-- No streaming TTS.
-- No per-user voice selection UI.
-- No viseme or lip-sync metadata.
-- TTS-to-AvatarKit playback is non-streaming in this demo.
-- Browser speech playback depends on browser support and autoplay policy.
-- ASR voice answer input is not implemented yet.
+- 无音频缓存
+- 无流式 TTS
+- 无 viseme 数据
+- 无用户语音选择 UI
+- TTS 到 AvatarKit 是非流式（一次性发送整个 PCM buffer）

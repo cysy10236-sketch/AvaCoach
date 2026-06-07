@@ -23,3 +23,9 @@ pnpm-debug.log*
 Thumbs.db
 .idea/
 .vscode/
+
+# Test artifacts
+test-speech.wav
+*.m4a
+*.wav
+*.pcm

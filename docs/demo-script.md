@@ -1,127 +1,72 @@
-# AvaCoach Demo Script
+# AvaCoach Demo Script (2–3 分钟)
 
 ## Demo Order
 
-1. Introduce AvaCoach as an AI digital human interview coach, not just a chatbot.
-2. Explain the architecture boundary: Spatius is the avatar rendering and lip-sync layer, not the LLM or TTS provider.
-3. Start the project with `npm run dev`.
-4. Open `http://localhost:5173`.
-5. Point out the layout: avatar area, live conversation, feedback panel, and controls.
-6. Click Connect Avatar.
-7. Wait for the real Avatar to appear and the status to reach Avatar Connected.
-8. Click Send Sample Audio and explain that this is the official SDK validation PCM, used only to verify AvatarKit rendering, Motion Server connection, and lip-sync.
-9. Select a role, such as Frontend Engineer.
-10. Set Question Source to IT Question Bank.
-11. Choose Difficulty, such as Medium.
-12. Choose a Topic, such as React.
-13. Click Start Interview.
-14. Explain that the first question comes from the structured seed bank, while follow-up and scoring can still use the LLM with expected points as context.
-15. Explain that the voice comes from Volcano TTS or another backend TTS provider, and Spatius drives mouth motion from the PCM audio.
-16. Type a concise candidate answer.
-17. Click Submit Answer.
-18. Show the candidate bubble, AI follow-up, score, feedback, covered points, missing points, and improvement tips.
-19. Repeat until round 3 or until the UI suggests ending.
-20. Click End Interview.
-21. Show the final report: Overall Score, Strengths, Weaknesses, Suggestions, Strong Topics, Weak Topics, Missed Knowledge Points, and Recommended Practice Topics.
-22. Explain fallback behavior and the next plans: ASR voice answers and larger enterprise/JD/custom question banks.
-23. Click Reset Demo to prove the flow is reusable.
+1. **开场** — 介绍 AvaCoach 是一个 AI 数字人模拟面试训练系统，不是普通 chatbot
+2. **展示 UI 布局** — 三栏 SaaS 工作台：左侧配置，中间数字人 + 对话，右侧反馈
+3. **Connect Avatar** — 点击后等待状态变为 "Avatar 已连接"
+4. **选择配置** — 岗位（如 Frontend Engineer）、题目来源（IT Question Bank）、难度（Medium）、Topic（如 React）
+5. **Start Interview** — 数字人面试官用 TTS + 口型同步提问第一题
+6. **语音回答** — 等数字人说完后，点击"开始语音回答"，说 5 秒中文
+7. **ASR 识别** — 停止录音后，观察 transcript 实时显示在回答框中
+8. **Submit Answer** — 右侧展示本轮评分、反馈、coveredPoints / missingPoints / improvementTips
+9. **重复 1–2 轮** — 观察 LLM 追问和知识点覆盖追踪
+10. **End Interview** — 展示最终报告：综合评分、强项、薄弱项、知识点分析
+11. **Reset Demo** — 验证一键重置，状态完全清空
 
 ## Live Startup
 
-```powershell
+```bash
 npm run dev
 ```
 
-Frontend:
+- 前端: `http://localhost:5173`
+- 后端: `http://localhost:3001`
 
-```text
-http://localhost:5173
-```
+## 关键讲解话术
 
-Backend:
+### 讲解 Spatius AvatarKit
 
-```text
-http://localhost:3001
-```
+> Spatius 是数字人渲染和驱动层。Connect Avatar 时会从后端获取短期 Session Token，初始化 AvatarKit，加载 Avatar，连接 Motion Server。如果任何步骤失败，placeholder 保持活跃，面试流程仍完全可用。
 
-## Explaining The Avatar Placeholder
+### 讲解 Volcano TTS
 
-Say:
+> TTS 层是 provider-based 架构。当前使用火山引擎 V3 HTTP Chunked TTS，输出 16kHz mono PCM16 音频。这个音频会直接送入 AvatarKit `controller.send()` 驱动数字人口型同步。如果 TTS 不可用，自动降级到浏览器语音或静音文本模式。
 
-```text
-Spatius is the rendering and lip-sync layer. Connect Avatar fetches a backend-minted Direct Mode Session Token, initializes AvatarKit, loads the Avatar ID, and connects to the Motion Server. If any SDK step fails, the placeholder remains active and the AI interview flow is still fully usable.
-```
+### 讲解 Volcano Streaming ASR
 
-## Explaining LLM And Mock Fallback
+> 语音识别使用火山引擎流式 ASR。浏览器麦克风采集 PCM16 / 16kHz / mono 音频，通过 WebSocket 代理实时发送到火山 bigmodel_async 服务。partial transcript 会实时显示在回答框，停止录音后收到 final result。如果 ASR 不可用，降级到浏览器 SpeechRecognition 或手动输入。
 
-Say:
+### 讲解 LLM Provider
 
-```text
-The same interview endpoints can use OpenAI when OPENAI_API_KEY is configured. If the key is missing, the model fails, or JSON parsing fails, the backend automatically returns mock interview logic. The UI shows AI Mode or Mock Fallback Mode based on the response source.
-```
+> 面试逻辑使用 provider-based LLM 架构，支持 DeepSeek、OpenAI 和 Mock。每轮回答后生成追问、评分和建议。题库模式下还会把 expectedPoints 传给 LLM 做上下文对齐。LLM 失败时自动降级到 Mock。
 
-## Explaining The IT Question Bank
+### 讲解 IT Question Bank
 
-Say:
+> 题库包含 110 道中文 IT 面试题，每道题有 role、topic、difficulty、expectedPoints、followUps 和 tags。每轮回答后会对比期望要点，展示已覆盖和遗漏的知识点。题库是 demo seed data，后续可替换为企业题库或 JD 生成题目。
 
-```text
-AvaCoach now supports two question sources: AI Generated and IT Question Bank. The question bank is structured seed data with role, topic, difficulty, expected points, follow-ups, and tags. This changes the product from a random AI Q&A demo into a controllable interview training system. The seed bank is not scraped from a restricted site; it is manually structured demo data inspired by common public interview topics and can later be replaced by an enterprise-owned question bank, JD-generated questions, or user-customized questions.
-```
+### 讲解 Fallback 设计
 
-## Explaining TTS Providers
-
-Say:
-
-```text
-The TTS layer is provider-based. Volcano TTS V3 HTTP Chunked is now integrated for Chinese interviewer speech and returns 16 kHz mono PCM16 audio. OpenAI TTS is also supported. If backend TTS is unavailable, the demo falls back to browser speech or silent text mode.
-```
-
-## Explaining Voice Modes
-
-Say:
-
-```text
-Ava first tries backend TTS. When a real avatar is connected, the TTS audio is normalized to 16 kHz mono PCM16 and sent to AvatarKit for lip-sync. Volcano already returns that PCM format. If backend TTS is unavailable, browser SpeechSynthesis is used, but browser speech does not drive avatar lip-sync. If the browser cannot speak, Ava stays in Silent Text Mode. The text interview remains fully usable in every case.
-```
+> 每一层外部依赖都有独立的降级路径。不是容错逻辑，而是 Demo 稳定性设计。确保在任何配置下都能完整演示面试流程。
 
 ## Likely Interviewer Questions
 
-Q: Why not put API keys in the frontend?
+**Q: 为什么 API Key 不放前端？**
 
-A: Frontend environment variables are bundled into browser assets. AvaCoach keeps OpenAI and Spatius API keys on the Express backend and only returns short-lived or non-secret outputs to the browser.
+A: 前端环境变量会打包进浏览器。AvaCoach 把所有 API Key 放在 Express 后端，前端只接收短期 Session Token 和公开 ID。
 
-Q: Why build fallback before real SDK integration?
+**Q: 为什么花精力做 fallback？**
 
-A: The fallback proves the product loop and protects the demo from vendor setup, network failures, quota issues, and SDK initialization risk.
+A: Fallback 保护 Demo 不受 provider 配置、网络、配额、SDK 初始化等问题影响。同时证明产品架构是松耦合的，每一层都可以独立替换。
 
-Q: How does the app know whether it is using AI or mock?
+**Q: Spatius 在这个系统里负责什么？**
 
-A: The backend adds `source: "llm"` or `source: "mock"` to interview API responses. The Header displays the current mode.
+A: Spatius 负责数字人渲染和口型同步驱动。它不生成问题、不合成为语音、不做面试逻辑。LLM + TTS + ASR + 题库都在 AvaCoach 后端。
 
-Q: What is Spatius responsible for here?
+**Q: 火山 TTS 音频怎么驱动口型的？**
 
-A: Spatius handles avatar rendering, Motion Server connection, audio-driven motion, and lip-sync. It does not generate questions or synthesize speech.
+A: 后端调用火山 TTS 获取 16kHz mono PCM16 音频，前端拿到后通过 AvatarKit `controller.send(pcm, true)` 发送。Spatius AvatarKit 从 PCM 音频生成口型动画。
 
-Q: Why use bundled sample audio before TTS?
+**Q: 流式 ASR 是怎么工作的？**
 
-A: The official quickstart sample PCM isolates the Spatius path: App ID, Avatar ID, Session Token, avatar loading, Motion Server connection, PCM send, local rendering, and lip sync. Once that works, product TTS can be connected confidently.
-
-Q: How does real interview speech drive the avatar?
-
-A: The interviewer replyText is sent to backend TTS. The frontend decodes the returned audio, mixes it to mono, resamples to 16 kHz, converts it to PCM16, and calls AvatarKit `controller.send(pcm, true)`. Browser speech fallback is only an audible fallback and does not move the avatar mouth.
-
-Q: How are expectedPoints used?
-
-A: In question bank mode, each question has expectedPoints. The backend compares the candidate answer against those points and returns coveredPoints, missingPoints, and improvementTips. The LLM also receives the expected points as context so its feedback and follow-up can stay aligned with the structured rubric.
-
-Q: What changed after integrating Volcano TTS?
-
-A: Volcano TTS V3 HTTP Chunked now returns 16 kHz mono PCM16 audio from the backend. That audio can be sent into AvatarKit without using browser SpeechSynthesis, so Start Interview and Submit Answer can drive digital human lip-sync.
-
-Q: What lifecycle bug did you fix?
-
-A: AvatarKit connected successfully but was destroyed immediately after Start Interview. The cause was an `AvatarStage` cleanup effect depending on an inline callback from `App.tsx`. State updates changed the callback identity, React ran the old cleanup, and the runtime was destroyed. I fixed it by storing the callback in a ref and making cleanup run only on true unmount.
-
-Q: How would you improve this for production?
-
-A: Add persisted sessions, auth, rate limits, structured logs, token refresh, TTS caching, SDK telemetry, deployment config, ASR voice answers, and stronger IT interview rubrics.
+A: 浏览器麦克风采集 PCM16 / 16kHz / mono → WebSocket 发送到后端 `/api/asr/stream` → 后端通过火山二进制协议转发到 bigmodel_async → 接收 partial/final transcript 返回前端 → 填入回答框。用户仍可编辑后再提交。

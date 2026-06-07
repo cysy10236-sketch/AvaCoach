@@ -7,7 +7,11 @@ export default defineConfig({
   plugins: [react(), avatarkitVitePlugin()],
   server: {
     proxy: {
-      '/api': 'http://localhost:3001',
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
 })

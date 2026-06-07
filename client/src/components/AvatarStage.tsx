@@ -49,6 +49,10 @@ function AvatarStage({
   }
 
   async function handleConnectAvatar() {
+    if (isConnecting) {
+      return
+    }
+
     const { appId, avatarId } = getSpatiusClientConfig()
 
     if (!appId || !avatarId) {
@@ -65,7 +69,21 @@ function AvatarStage({
     }
 
     if (runtimeRef.current) {
-      update('avatar_connected', 'Real Avatar Connected. Ready to send bundled sample PCM audio.')
+      const snapshot = runtimeRef.current.getSnapshot()
+
+      if (snapshot.isReady) {
+        update('avatar_connected', 'Real Avatar Connected. Ready to send bundled sample PCM audio.')
+      } else if (
+        snapshot.avatarRuntimeState === 'connecting' ||
+        snapshot.avatarRuntimeState === 'render_ready' ||
+        snapshot.avatarRuntimeState === 'token_loading' ||
+        snapshot.avatarRuntimeState === 'sdk_initializing' ||
+        snapshot.avatarRuntimeState === 'avatar_loading'
+      ) {
+        update('sdk_loading', 'AvatarKit is still connecting. Please wait for Avatar Connected.')
+      } else {
+        update('error', `Avatar runtime exists but is not ready (${snapshot.avatarRuntimeState}). Refresh or reset before reconnecting.`)
+      }
       return
     }
 
@@ -76,8 +94,16 @@ function AvatarStage({
         container: containerRef.current,
         onStateChange: update,
       })
+      const runtime = runtimeRef.current
       onAvatarSpeechReady(
-        (pcmArrayBuffer) => runtimeRef.current?.speakPcm(pcmArrayBuffer) ?? Promise.reject(new Error('AvatarKit runtime is not ready.')),
+        runtime
+          ? {
+              speakPcm: (pcmArrayBuffer) => runtime.speakPcm(pcmArrayBuffer),
+              waitForReady: (timeoutMs) => runtime.waitForReady(timeoutMs),
+              getSnapshot: () => runtime.getSnapshot(),
+              interrupt: () => runtime.interrupt(),
+            }
+          : null,
         () => runtimeRef.current?.interrupt(),
       )
     } catch (error) {

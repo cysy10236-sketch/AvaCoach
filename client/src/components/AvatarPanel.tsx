@@ -23,22 +23,23 @@ const statusLabels: Record<AvatarStatus, string> = {
 const spatiusStateLabels: Record<SpatiusRuntimeStatus['connectionState'], string> = {
   avatar_connected: 'Avatar Connected',
   connected: 'Avatar Connected',
+  disconnected: 'Disconnected',
   error: 'SDK Error',
   not_configured: 'Not Configured',
-  placeholder: 'Placeholder Mode',
+  placeholder: 'Placeholder',
   avatar_speaking: 'Avatar Speaking',
-  avatar_speech_failed: 'SDK Error',
+  avatar_speech_failed: 'Speech Failed',
   avatar_speech_finished: 'Listening',
-  avatar_speech_sending: 'Avatar Speaking',
+  avatar_speech_sending: 'Speech Sending',
   avatar_loaded: 'Avatar Loaded',
   avatar_loading: 'Avatar Loading',
-  motion_server_connected: 'Motion Server Connected',
+  motion_server_connected: 'Motion Connected',
   render_ready: 'Render Ready',
-  sample_audio_failed: 'Sample Audio Failed',
-  sample_audio_finished: 'Sample Audio Finished',
-  sample_audio_loading: 'Sample Audio Loading',
-  sample_audio_playing: 'Sample Audio Playing',
-  sample_audio_sending: 'Sample Audio Sending',
+  sample_audio_failed: 'Sample Failed',
+  sample_audio_finished: 'Sample Finished',
+  sample_audio_loading: 'Sample Loading',
+  sample_audio_playing: 'Sample Playing',
+  sample_audio_sending: 'Sample Sending',
   sdk_ready: 'SDK Ready',
   sdk_loading: 'SDK Loading',
   token_not_checked: 'Not Checked',
@@ -57,8 +58,8 @@ const voiceModeLabels: Record<VoiceMode, string> = {
   'avatar-tts': 'Avatar TTS Lip-Sync',
   'sample-pcm': 'Sample PCM',
   tts: 'TTS Audio',
-  browser: 'Browser Speech Fallback',
-  silent: 'Silent Text Mode',
+  browser: 'Browser Speech',
+  silent: 'Silent Text',
 }
 
 function AvatarPanel({
@@ -77,11 +78,14 @@ function AvatarPanel({
   )
 
   return (
-    <section className="panel avatar-panel" aria-label="Digital human interviewer">
-      <div className="panel-heading">
-        <p className="eyebrow">Digital Human Interviewer</p>
+    <section className="panel avatar-panel" aria-label="数字人面试官">
+      <div className="panel-heading compact">
+        <div className="section-title">
+          <span className="section-icon">●</span>
+          <h2>数字人面试官</h2>
+        </div>
         <span className={`status-badge status-${status}`}>
-          {statusLabels[status]}
+          当前状态：{statusLabels[status]}
         </span>
       </div>
 
@@ -91,19 +95,22 @@ function AvatarPanel({
         onStatusChange={handleStatusChange}
       />
 
-      <div className="avatar-note">
-        <strong>Spatius: {spatiusStateLabels[spatiusStatus.connectionState]}</strong>
-        <span>{spatiusStatus.message}</span>
+      <div className="avatar-meta-row">
+        <Metric label="Spatius" value={spatiusStateLabels[spatiusStatus.connectionState]} />
+        <Metric label="Token" value={tokenStateLabels[spatiusStatus.tokenState]} />
+        <Metric label="Voice" value={voiceModeLabels[voiceMode]} />
       </div>
-      <div className="spatius-token-state">
-        <span>Token</span>
-        <strong>{tokenStateLabels[spatiusStatus.tokenState]}</strong>
-      </div>
-      <div className="spatius-token-state">
-        <span>Voice</span>
-        <strong>{voiceModeLabels[voiceMode]}</strong>
-      </div>
+      <p className="avatar-note">{spatiusStatus.message}</p>
     </section>
+  )
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="avatar-metric">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
   )
 }
 

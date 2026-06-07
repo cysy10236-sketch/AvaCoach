@@ -12,6 +12,7 @@ const envResult = dotenv.config({ path: envFilePath });
 export type SpatiusRegion = "us-west" | "ap-northeast";
 export type LlmProviderName = "openai" | "deepseek" | "mock";
 export type TtsProviderName = "openai" | "volcano" | "mock";
+export type AsrProviderName = "browser" | "volcano" | "volcano_stream" | "mock";
 export type VolcanoTtsProviderMode = "volcano_bidirection" | "volcano";
 
 const regionHosts: Record<SpatiusRegion, string> = {
@@ -52,6 +53,21 @@ function readTtsProvider(): TtsProviderName {
   }
 
   return "openai";
+}
+
+function readAsrProvider(): AsrProviderName {
+  const value = process.env.ASR_PROVIDER;
+
+  if (
+    value === "browser" ||
+    value === "volcano" ||
+    value === "volcano_stream" ||
+    value === "mock"
+  ) {
+    return value;
+  }
+
+  return "mock";
 }
 
 function readVolcanoTtsProviderMode(): VolcanoTtsProviderMode {
@@ -115,6 +131,35 @@ export const env = {
     provider: readTtsProvider(),
     model: process.env.TTS_MODEL?.trim() || "gpt-4o-mini-tts",
     voice: process.env.TTS_VOICE?.trim() || "alloy",
+  },
+  asr: {
+    provider: readAsrProvider(),
+  },
+  volcanoAsr: {
+    enabled: readBoolean("VOLCANO_ASR_ENABLED", false),
+    streamDebug: readBoolean("ASR_STREAM_DEBUG", false),
+    apiKey: sanitizeEnvSecret(process.env.VOLCANO_ASR_API_KEY),
+    appId: sanitizeEnvSecret(process.env.VOLCANO_ASR_APP_ID),
+    accessToken: sanitizeEnvSecret(process.env.VOLCANO_ASR_ACCESS_TOKEN),
+    resourceId:
+      sanitizeEnvSecret(process.env.VOLCANO_ASR_RESOURCE_ID) ||
+      "volc.seedasr.sauc.duration",
+    endpoint:
+      process.env.VOLCANO_ASR_ENDPOINT?.trim() ||
+      "wss://openspeech.bytedance.com/api/v3/sauc/bigmodel_async",
+    language: process.env.VOLCANO_ASR_LANGUAGE?.trim() || "zh-CN",
+    audioFormat: process.env.VOLCANO_ASR_AUDIO_FORMAT?.trim() || "pcm",
+    audioCodec: process.env.VOLCANO_ASR_AUDIO_CODEC?.trim() || "raw",
+    sampleRate: readNumber("VOLCANO_ASR_SAMPLE_RATE", 16000),
+    bits: readNumber("VOLCANO_ASR_BITS", 16),
+    channel: readNumber("VOLCANO_ASR_CHANNEL", 1),
+    modelName: process.env.VOLCANO_ASR_MODEL_NAME?.trim() || "bigmodel",
+    enableItn: readBoolean("VOLCANO_ASR_ENABLE_ITN", true),
+    enablePunc: readBoolean("VOLCANO_ASR_ENABLE_PUNC", true),
+    enableDdc: readBoolean("VOLCANO_ASR_ENABLE_DDC", false),
+    enableNonstream: readBoolean("VOLCANO_ASR_ENABLE_NONSTREAM", true),
+    resultType: process.env.VOLCANO_ASR_RESULT_TYPE?.trim() || "single",
+    endWindowSize: readNumber("VOLCANO_ASR_END_WINDOW_SIZE", 800),
   },
   volcanoTts: {
     enabled: readBoolean("VOLCANO_TTS_ENABLED", false),

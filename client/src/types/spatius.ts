@@ -21,7 +21,22 @@ export type SpatiusConnectionState =
   | 'avatar_speech_failed'
   | 'connected'
   | 'error'
+  | 'disconnected'
   | 'placeholder'
+
+export type AvatarRuntimeState =
+  | 'idle'
+  | 'token_loading'
+  | 'sdk_initializing'
+  | 'avatar_loading'
+  | 'render_ready'
+  | 'connecting'
+  | 'connected'
+  | 'speech_sending'
+  | 'speaking'
+  | 'speech_finished'
+  | 'error'
+  | 'disconnected'
 
 export type SpatiusAvatarMode = 'real-avatar' | 'placeholder'
 
@@ -36,12 +51,35 @@ export interface SpatiusRuntimeStatus {
 
 export interface AvatarKitRuntime {
   sendSampleAudio: () => Promise<void>
-  speakPcm: (pcmArrayBuffer: ArrayBuffer) => Promise<void>
+  speakPcm: (pcmArrayBuffer: ArrayBuffer) => Promise<AvatarSpeechSendResult>
+  waitForReady: (timeoutMs?: number) => Promise<boolean>
+  getSnapshot: () => AvatarRuntimeSnapshot
   interrupt: () => void
   destroy: (reason?: AvatarRuntimeDestroyReason) => void
 }
 
-export type AvatarSpeechSender = (pcmArrayBuffer: ArrayBuffer) => Promise<void>
+export interface AvatarRuntimeSnapshot {
+  avatarRuntimeState: AvatarRuntimeState
+  connectionState: string
+  conversationState: string
+  controllerStarted: boolean
+  isReady: boolean
+}
+
+export interface AvatarSpeechSender {
+  speakPcm: (pcmArrayBuffer: ArrayBuffer) => Promise<AvatarSpeechSendResult>
+  waitForReady: (timeoutMs?: number) => Promise<boolean>
+  getSnapshot: () => AvatarRuntimeSnapshot
+  interrupt: () => void
+}
+
+export interface AvatarSpeechSendResult {
+  sent: boolean
+  conversationIdReturned: boolean
+  playingObserved: boolean
+  shouldFallback: boolean
+  fallbackReason?: string
+}
 
 export type AvatarRuntimeDestroyReason =
   | 'component-unmount'

@@ -1,68 +1,117 @@
-# ASR Plan
+# ASR Plan — 状态：✅ Streaming ASR 已接入并通过测试
 
-## Why ASR Is Needed
+## Role In AvaCoach
 
-AvaCoach should eventually let candidates answer by voice, not only by typing.
+ASR 是候选人语音回答输入层。它将用户语音转为文本，填入回答框，用户仍可编辑后手动提交。
 
-Voice answers make the demo closer to a real interview because candidates can practice:
-
-- Speaking under interview pressure.
-- Answer pacing.
-- Verbal structure.
-- Natural follow-up conversation.
-
-Text input should remain as fallback for browser permission issues, noisy environments, or provider failures.
-
-## Future Flow
-
-```text
-Candidate microphone
--> browser recording
--> /api/asr/transcribe
--> Volcano ASR
--> transcript
--> existing Submit Answer flow
+```
+浏览器麦克风 (PCM16 / 16kHz / mono)
+→ WebSocket → 后端 /api/asr/stream
+→ 火山 bigmodel_async (自定义二进制协议)
+→ partial transcript (实时显示)
+→ final transcript (停止后确认)
+→ 填入 answer textarea
+→ 用户编辑 → Submit Answer
 ```
 
-The important product decision is to reuse the current text answer pipeline. ASR only produces the transcript; the existing interview API can still evaluate, score, and generate follow-up questions.
+## Current Implementation: Volcano Streaming ASR ✅
 
-## Provider Plan
+### 架构
+
+- **前端**: `audioRecorder.ts` (ScriptProcessorNode PCM16 采集) → `streamingAsrClient.ts` (WebSocket 发送)
+- **代理**: Vite dev proxy `ws: true` → 或直连 `ws://localhost:3001/api/asr/stream`
+- **后端**: `asrStream.ts` (WebSocket Server, 诊断日志) → `volcanoStreamingAsrClient.ts` (二进制协议)
+- **协议**: 火山自定义 binary protocol v1 (4B header + gzipped JSON payload)
+- **模型**: bigmodel_async (流式 partial + final)
+
+### 音频格式
+
+```
+格式: PCM16
+采样率: 16000 Hz
+声道: mono
+字节序: little-endian
+采集间隔: ~256ms (ScriptProcessorNode bufferSize=4096)
+```
+
+### 前端诊断 (dev only)
+
+开发模式下 (`import.meta.env.DEV`)，录音结束后自动输出：
+- `pcmChunkCount` / `pcmBytesTotal`
+- `estimatedDurationSec` / `rmsLevel` / `peakLevel` / `silenceRatio`
+- `first10SampleValues`
+- 可调用 `downloadLastAsrPcm()` 下载 WAV 文件做离线对比
+
+### 后端诊断 (ASR_STREAM_DEBUG=true)
+
+```
+connectId, frontAudioChunkCount, frontAudioBytesTotal,
+firstChunkBytes, lastChunkBytes, receivedStop,
+volcanoWsReady, volcanoAudioChunkCount,
+partialCount, finalReceived, finalTranscriptLength, fallbackReason
+```
+
+绝不输出：API Key、完整音频、完整 transcript、raw hex。
+
+### 测试脚本
 
 ```bash
-ASR_PROVIDER=volcano
-ASR_PROVIDER=mock
+node scripts/test-asr-stream.mjs                    # 440Hz sine wave
+node scripts/test-asr-stream.mjs ./test-speech.wav  # 真实 WAV 文件
 ```
 
-Volcano is the planned first real ASR provider because the project is moving toward Chinese IT interview scenarios and Volcano/Doubao voice capabilities.
+### 测试结果 (15s 中文语音 WAV)
 
-Mock ASR should remain available for stable demo fallback.
+| Metric | Value |
+|--------|-------|
+| Audio chunks sent | 375 |
+| Partial transcripts | 23 |
+| Final transcript | ✅ 完整中文识别 |
+| Ready event | ✅ |
+| Final event | ✅ |
+| WebSocket close | ✅ clean |
 
-## Future Environment Variables
+## Provider Modes
 
 ```bash
-ASR_PROVIDER=mock
-VOLCANO_ASR_APP_ID=
-VOLCANO_ASR_ACCESS_KEY_ID=
-VOLCANO_ASR_SECRET_ACCESS_KEY=
-VOLCANO_ASR_ENDPOINT=
+ASR_PROVIDER=volcano_stream  # 火山流式 ASR（当前默认推荐）
+ASR_PROVIDER=browser         # 浏览器 SpeechRecognition
+ASR_PROVIDER=mock            # 后端 mock fallback
 ```
 
-No ASR credentials should ever be exposed to the frontend.
+## Environment Variables
 
-## Risks
+```bash
+ASR_PROVIDER=volcano_stream
+VOLCANO_ASR_ENABLED=true
+VOLCANO_ASR_API_KEY=
+VOLCANO_ASR_RESOURCE_ID=volc.seedasr.sauc.duration
+VOLCANO_ASR_ENDPOINT=wss://openspeech.bytedance.com/api/v3/sauc/bigmodel_async
+VOLCANO_ASR_LANGUAGE=zh-CN
+VOLCANO_ASR_AUDIO_FORMAT=pcm
+VOLCANO_ASR_SAMPLE_RATE=16000
+VOLCANO_ASR_BITS=16
+VOLCANO_ASR_CHANNEL=1
+ASR_STREAM_DEBUG=false
+```
 
-- Browser microphone permission can be denied.
-- Browser recording formats vary, commonly `audio/webm`, `audio/ogg`, or WAV after conversion.
-- Sampling rate and channel count may need normalization before upload.
-- Streaming ASR and non-streaming ASR have different UX and backend contracts.
-- Provider authentication and quota failures must fall back to typed answers.
-- Live interview demos need a visible fallback path if the microphone or network fails.
+ASR 凭证仅在 `server/.env`，绝不暴露到前端。
 
-## Demo Fallback
+## Fallback Strategy
 
-If ASR is unavailable:
+```
+没有麦克风权限      → 浏览器 SpeechRecognition 或手动输入
+WebSocket 未连接    → 自动 fallback 到 browser ASR
+火山 ASR 不可用     → fallback JSON → browser ASR
+Final 为空          → 保留最后一个 partial 作为结果
+超时无 Final        → 15s 超时保护，自动 fallback
+Partial 有内容      → 不会被 browser ASR fallback 覆盖
+```
 
-- Keep the answer text box.
-- Let users type the candidate answer.
-- Keep the existing Submit Answer flow.
-- Keep AvatarKit TTS lip-sync for interviewer replies when TTS is available.
+## Protocol Notes
+
+火山 bigmodel_async 协议要点：
+- 流式响应 (`flags & 0b0001`): `[4B header][4B seq][4B size][payload]`
+- 标准响应 (`flags=0`): `[4B header][4B size][payload]`
+- 空 final result: 火山返回 `0x00` + `FLAG_FINAL` → 视为合法空 final
+- Gzip 压缩/解压: client request payload 和 server response payload 均使用 gzip

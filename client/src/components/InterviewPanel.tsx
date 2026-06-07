@@ -17,23 +17,20 @@ function InterviewPanel({ messages, stage }: InterviewPanelProps) {
   }, [messages])
 
   return (
-    <section className="panel interview-panel" aria-label="Interview conversation">
-      <div className="panel-heading">
-        <div>
-          <p className="eyebrow">Live Interview</p>
-          <h2>Conversation</h2>
+    <section className="panel interview-panel" aria-label="面试对话">
+      <div className="panel-heading compact">
+        <div className="section-title">
+          <span className="section-icon">▦</span>
+          <h2>面试对话</h2>
         </div>
-        <span className="stage-pill">{stage}</span>
+        <span className="stage-pill">{formatStage(stage)}</span>
       </div>
 
       <div className="message-list" ref={listRef}>
         {messages.length === 0 ? (
           <div className="empty-state">
-            <h3>Ready when you are.</h3>
-            <p>
-              Choose a role and start the interview. Ava will open the session,
-              ask the first question, and give feedback after each answer.
-            </p>
+            <h3>准备开始面试</h3>
+            <p>选择岗位与题目来源后，Ava 会开始提问，并在每轮回答后生成追问与反馈。</p>
           </div>
         ) : (
           messages.map((message) => (
@@ -42,7 +39,7 @@ function InterviewPanel({ messages, stage }: InterviewPanelProps) {
               key={message.id}
             >
               <span>
-                {message.speaker === 'interviewer' ? 'Ava' : 'Candidate'} ·{' '}
+                {message.speaker === 'interviewer' ? '面试官 Ava' : '候选人'} ·{' '}
                 {formatTime(message.timestamp)}
               </span>
               <p>{message.text}</p>
@@ -54,8 +51,21 @@ function InterviewPanel({ messages, stage }: InterviewPanelProps) {
   )
 }
 
+function formatStage(stage: InterviewStage) {
+  const labels: Record<InterviewStage, string> = {
+    answering: '回答中',
+    asking: '提问中',
+    evaluating: '评估中',
+    finished: '已完成',
+    idle: '待开始',
+    opening: '开场中',
+  }
+
+  return labels[stage]
+}
+
 function formatTime(value: string) {
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat('zh-CN', {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(value))

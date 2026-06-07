@@ -138,9 +138,38 @@ Expected:
 - `Content-Type` is `audio/pcm; rate=16000; channels=1; encoding=signed-integer; bits=16`.
 - `RawContentLength` is greater than `1000`.
 
+## ASR Voice Answer Test
+
+Browser demo path:
+
+- Start the frontend with `npm run dev`.
+- Open `http://localhost:5173`.
+- Start an interview and wait until the digital human finishes speaking.
+- Click Start Voice Answer.
+- Allow microphone permission.
+- Speak a short Chinese answer.
+- Click Stop Recording.
+- Confirm the transcript appears in the answer textarea.
+- Edit the transcript manually if needed.
+- Click Submit Answer.
+- Confirm the existing feedback, follow-up, TTS, and AvatarKit lip-sync flow still works.
+
+Backend skeleton test:
+
+```powershell
+$body = @{ language = "zh-CN"; mockText = "这是一个后端 ASR mock 测试。" } | ConvertTo-Json
+Invoke-WebRequest -Uri http://localhost:3001/api/asr/transcribe -Method Post -ContentType "application/json" -Body $body
+```
+
+Expected:
+
+- Mock provider can return the mock transcript.
+- Without a real provider, the backend returns fallback JSON.
+- No ASR key or recording file is committed to the repository.
+
 ## Current Known TODOs
 
-- Add ASR voice answer input.
-- Add IT question bank and stronger technical rubrics.
+- Implement real Volcano ASR after official API docs are confirmed.
+- Add stronger technical rubrics.
 - Add production-grade token refresh and SDK error handling.
 - Prepare production deployment.

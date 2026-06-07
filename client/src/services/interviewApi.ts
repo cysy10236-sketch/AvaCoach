@@ -6,6 +6,7 @@ import type {
   Report,
   StartInterviewOptions,
   StartInterviewResponse,
+  InterviewFlowStatus,
 } from '../types/interview'
 
 async function postJson<TResponse>(
@@ -39,12 +40,14 @@ export function nextInterview(
   answer: string,
   history: Message[],
   questionMeta?: QuestionMeta | null,
+  status?: InterviewFlowStatus,
 ) {
   return postJson<NextInterviewResponse>('/api/interview/next', {
     role,
     answer,
     history,
     questionMeta,
+    status,
   })
 }
 

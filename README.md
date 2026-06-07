@@ -1,177 +1,162 @@
 # AvaCoach
 
-AI Digital Human Mock Interviewer
+AI 数字人模拟面试训练系统
 
 ## 1. Project Overview
 
-AvaCoach is a demo product for AI-powered mock interviews with a digital human interviewer.
+AvaCoach 是一个中文 IT 数字人模拟面试训练系统。它通过 AI 数字人扮演面试官，结合 LLM 追问、实时语音识别、语音合成驱动数字人口型同步、结构化 IT 题库，为用户提供接近真实面试的训练体验。
 
-The product lets a candidate choose a target role, start an interview, answer questions, receive dynamic follow-up questions, get scored feedback, hear interviewer replies, and generate a final interview report.
+与普通文本 chatbot 不同，AvaCoach 强调"被面试"的临场感：用户可以看到数字人面试官说话并对口型、用语音回答问题、获得结构化反馈和最终报告。
 
-The current demo is fully usable with fallback modes. The Spatius layer now runs through Direct Mode with a backend-minted Session Token, loads a real Avatar through AvatarKit, validates the SDK with the official bundled PCM sample, and can drive avatar lip-sync from real interviewer TTS replies.
+当前 Demo 是一个完整可运行的原型，所有外部依赖（Avatar、TTS、ASR、LLM）均有 fallback 降级路径，确保在任何配置下都能完整演示面试流程。
 
-## 2. Demo Features
+## 2. Demo Highlights
 
-Completed features:
-
-- Role-based interview flow.
-- Supported roles:
-  - Frontend Engineer
-  - Backend Engineer
-  - Product Manager
-  - AI Engineer
-  - General Behavioral
-- Provider-based LLM layer with OpenAI, DeepSeek, and Mock modes.
-- LLM dynamic interviewer when OpenAI or DeepSeek is configured.
-- Mock fallback interviewer when LLM is unavailable.
-- Structured IT question bank mode with role, topic, difficulty, expected points, follow-ups, and tags.
-- Question-bank-based feedback showing covered points, missing points, and improvement tips.
-- TTS voice playback for interviewer replies when backend TTS is available.
-- Volcano TTS V3 HTTP Chunked provider returning 16 kHz mono PCM16 audio.
-- Avatar TTS Lip-Sync path: interviewer replyText -> backend TTS -> frontend PCM16 conversion or raw PCM passthrough -> AvatarKit.
-- Browser SpeechSynthesis fallback.
-- Silent text mode fallback.
-- Conversation history with interviewer and candidate messages.
-- Score, feedback, and suggestion after each answer.
-- Final report with overall score, strengths, weaknesses, and suggestions.
-- Spatius Direct Mode Session Token endpoint verified with direct token success.
-- AvatarKit Web SDK package installed using the official `@spatius/avatarkit` package.
-- Manual Connect Avatar flow that loads the real Avatar when credentials are configured.
-- Send Sample Audio quickstart flow for official SDK lip-sync validation.
-- Bundled PCM16 mono 16 kHz sample audio for first AvatarKit validation.
-- Interviewer replies from Start Interview and Submit Answer can drive AvatarKit lip-sync when AvatarKit and backend TTS are available.
-- AvatarStage lifecycle bug fixed: ordinary state updates no longer destroy the AvatarKit runtime.
-- Fallback avatar placeholder.
-- Demo script and delivery documentation.
+- **AI Digital Human Interviewer** — 真实 Spatius AvatarKit 数字人渲染，支持 Direct Mode 连接
+- **Avatar Lip-sync** — Volcano TTS 输出 16kHz mono PCM16，通过 AvatarKit `controller.send()` 驱动口型同步
+- **Real-time Voice Answer** — 浏览器麦克风采集 PCM16 / 16kHz / mono，经 WebSocket 代理到火山引擎流式 ASR，实时返回 partial / final transcript
+- **Chinese Structured IT Question Bank** — 110 道中文面试题，覆盖 Frontend / Backend / AI / Behavioral，含 expectedPoints 评分体系
+- **LLM Follow-up & Feedback** — DeepSeek / OpenAI / Mock 三选一，每轮生成追问 + 评分 + 改进建议
+- **Final Interview Report** — 综合评分 + 强项/薄弱项 + 知识点分析 + 推荐练习方向
+- **Robust Fallback Strategy** — Avatar / TTS / ASR / LLM 四层独立降级，任何一层失败不影响面试流程
 
 ## 3. Architecture
 
 ```text
-Candidate Answer
--> Frontend Conversation UI
--> Interview API
--> LLM / Mock Fallback
--> TTS / Browser Speech / Silent Fallback
--> Spatius Avatar Layer
--> Digital Human Interviewer UI
+┌─────────────────────────────────────────────────────────┐
+│                    Frontend (React + Vite)                │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐  │
+│  │AvatarPanel│ │Interview │ │Feedback  │ │ControlPanel│  │
+│  │ AvatarKit │ │  Panel   │ │  Panel   │ │ Voice/Text │  │
+│  └─────┬─────┘ └────┬─────┘ └────┬─────┘ └─────┬──────┘  │
+│        │            │            │              │         │
+│  ┌─────┴────────────┴────────────┴──────────────┴──────┐  │
+│  │              Service Layer (client/src/services/)    │  │
+│  │  avatarKitClient  │  streamingAsrClient  │  ttsApi   │  │
+│  │  audioRecorder    │  speechPlayer        │  interviewApi │
+│  └───────────────────┴──────────────────────┴───────────┘  │
+└──────────────────────────┬──────────────────────────────┘
+                           │ HTTP + WebSocket
+┌──────────────────────────┴──────────────────────────────┐
+│                 Backend (Express + TypeScript)            │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐  │
+│  │ /interview│ │  /api/tts │ │ /api/asr │ │/api/spatius│  │
+│  │   LLM    │ │  Volcano │ │  Volcano │ │  Session   │  │
+│  │ Provider │ │   TTS    │ │Stream ASR│ │   Token    │  │
+│  └─────┬────┘ └────┬─────┘ └────┬─────┘ └─────┬──────┘  │
+│        │           │            │              │         │
+│  ┌─────┴───────────┴────────────┴──────────────┴──────┐  │
+│  │  Provider Architecture (env-switchable)             │  │
+│  │  LLM: DeepSeek / OpenAI / Mock                      │  │
+│  │  TTS: Volcano V3 / OpenAI / Mock                    │  │
+│  │  ASR: Volcano Streaming / Browser / Mock             │  │
+│  └─────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────┘
+                           │
+┌──────────────────────────┴──────────────────────────────┐
+│                  External Services                        │
+│  ┌──────────┐ ┌──────────────┐ ┌──────────────────────┐  │
+│  │ DeepSeek │ │Volcano TTS V3│ │Volcano Streaming ASR │  │
+│  │ / OpenAI │ │  (HTTP Chunk)│ │  (WebSocket Binary)  │  │
+│  └──────────┘ └──────────────┘ └──────────────────────┘  │
+│  ┌──────────────────────────────────────────────────────┐ │
+│  │         Spatius AvatarKit (Direct Mode)              │ │
+│  │  Session Token → SDK Init → Avatar Load → Render    │ │
+│  └──────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────┘
 ```
-
-Repository structure:
 
 ```text
-client/   React + Vite + TypeScript frontend
-server/   Node.js + Express + TypeScript backend
-docs/     Delivery docs, integration notes, demo script
+Repository:
+  client/   React + Vite + TypeScript 前端
+  server/   Node.js + Express + TypeScript 后端
+  docs/     交付文档、集成笔记、演示脚本
+  scripts/  测试脚本（ASR stream 验证等）
 ```
 
-Security boundary:
+**安全边界**：
+- API Key 仅存放于 `server/.env`，前端不可访问
+- 前端仅接收短期 Session Token 和公开 ID
+- `.env` 文件被 `.gitignore` 排除
 
-- API keys are backend-only.
-- Frontend never receives OpenAI or Spatius API keys.
-- Frontend will only use public Spatius IDs and short-lived Session Tokens.
+## 4. Core User Flow
 
-## 4. Current Status
-
-Completed:
-
-- React + Express monorepo.
-- Mock interview flow.
-- Structured IT question bank seed data.
-- LLM integration with fallback.
-- TTS / browser speech / silent fallback.
-- AvatarKit lip-sync for interviewer replies when real avatar and backend TTS are available.
-- Spatius Direct Mode Session Token endpoint verified.
-- AvatarKit SDK package installed and connected.
-- Official-style sample PCM validation path.
-- Volcano TTS V3 HTTP Chunked integration.
-- Frontend PCM path from TTS to AvatarKit controller.
-- AvatarStage component created.
-- Fallback avatar placeholder.
-- Final report.
-- Demo script.
-- Spatius integration docs.
-- Product suggestions for Spatius SDK.
-
-Pending:
-
-- ASR voice answer input.
-- IT question bank.
-- Production deployment.
-
-Important note:
-
-The Avatar area no longer requires a manually pasted `VITE_SPATIUS_SESSION_TOKEN`. It calls the backend `GET /api/spatius/session-token` endpoint, receives a short-lived token, and initializes AvatarKit only after the user clicks Connect Avatar. Without valid configuration, it falls back to the placeholder. The demo flow is still fully usable.
+1. **Connect Avatar** — 点击后后端获取短期 Session Token，AvatarKit 初始化、加载 Avatar、连接 Motion Server
+2. **Choose Role / Question Source / Difficulty / Topic** — 选择目标岗位、题目来源（AI 生成 或 IT 题库）、难度、知识点
+3. **Start Interview** — 数字人面试官用 TTS + 口型同步提出第一个问题
+4. **Answer by Voice or Text** — 点击"开始语音回答"使用麦克风输入，或直接打字
+5. **ASR Transcript** — 实时 partial/final transcript 填入回答框
+6. **Submit Answer** — LLM 生成反馈、评分、追问（题库模式下结合 expectedPoints）
+7. **Repeat** — 最多 3 轮面试，每轮后展示 coveredPoints / missingPoints / improvementTips
+8. **End Interview** — 生成最终报告（综合评分 + 强项 + 薄弱项 + 知识点分析）
+9. **Reset Demo** — 一键清空所有状态，重新开始
 
 ## 5. Tech Stack
 
-Frontend:
+**Frontend:**
+- React + TypeScript + Vite
+- Spatius AvatarKit Web SDK (Direct Mode)
+- Web Audio API (AudioContext, ScriptProcessor, OfflineAudioContext)
+- WebSocket (流式 ASR)
 
-- React
-- Vite
-- TypeScript
+**Backend:**
+- Node.js + Express + TypeScript
+- ws (WebSocket Server)
+- Provider-based 架构
 
-Backend:
+**AI / Voice / Avatar:**
+- LLM: DeepSeek / OpenAI / Mock
+- TTS: Volcano V3 HTTP Chunked / OpenAI / Mock
+- ASR: Volcano Streaming WebSocket (bigmodel_async) / Browser SpeechRecognition / Mock
+- Avatar: Spatius AvatarKit (Direct Mode, PCM16 16kHz mono lip-sync)
 
-- Node.js
-- Express
-- TypeScript
+## 6. Environment Variables
 
-Provider integrations:
-
-- Provider-based LLM through backend API.
-- OpenAI and DeepSeek LLM providers.
-- Provider-based TTS through backend API.
-- TTS providers: OpenAI, Volcano/Doubao V3 HTTP Chunked, Mock fallback.
-- Browser audio decoding and PCM16 conversion for AvatarKit.
-- Spatius Direct Mode token endpoint.
-- Local structured question bank service and API.
-
-## 6. Local Setup
-
-Install dependencies from the repository root:
-
-```bash
-npm install
-```
-
-## 7. Environment Variables
-
-Create backend secrets in `server/.env`. Do not commit this file.
+### server/.env
 
 ```bash
 PORT=3001
 CLIENT_ORIGIN=http://localhost:5173
 
+# LLM
 LLM_PROVIDER=openai
-
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4o-mini
-
 DEEPSEEK_API_KEY=
 DEEPSEEK_MODEL=deepseek-v4-flash
 
+# TTS
 TTS_PROVIDER=openai
-
-# OpenAI TTS
 TTS_MODEL=gpt-4o-mini-tts
 TTS_VOICE=alloy
 
-# Volcano / Doubao TTS
+# Volcano TTS (16kHz mono PCM16 → AvatarKit lip-sync)
 VOLCANO_TTS_ENABLED=false
 VOLCANO_TTS_PROVIDER=volcano_bidirection
+VOLCANO_TTS_API_KEY=
 VOLCANO_TTS_RESOURCE_ID=seed-tts-2.0
 VOLCANO_TTS_VOICE_TYPE=zh_female_vv_uranus_bigtts
+VOLCANO_TTS_ENDPOINT=https://openspeech.bytedance.com/api/v3/tts/unidirectional
 VOLCANO_TTS_FORMAT=pcm
 VOLCANO_TTS_SAMPLE_RATE=16000
-VOLCANO_TTS_SPEECH_RATE=0
-VOLCANO_TTS_DISABLE_MARKDOWN_FILTER=true
-VOLCANO_TTS_ENABLE_LANGUAGE_DETECTOR=false
 VOLCANO_ACCESS_KEY_ID=
 VOLCANO_SECRET_ACCESS_KEY=
 VOLCANO_APP_ID=
-VOLCANO_TTS_API_KEY=
-VOLCANO_TTS_ENDPOINT=https://openspeech.bytedance.com/api/v3/tts/unidirectional
 
+# ASR
+ASR_PROVIDER=volcano_stream
+VOLCANO_ASR_ENABLED=false
+VOLCANO_ASR_API_KEY=
+VOLCANO_ASR_RESOURCE_ID=volc.seedasr.sauc.duration
+VOLCANO_ASR_ENDPOINT=wss://openspeech.bytedance.com/api/v3/sauc/bigmodel_async
+VOLCANO_ASR_LANGUAGE=zh-CN
+VOLCANO_ASR_AUDIO_FORMAT=pcm
+VOLCANO_ASR_SAMPLE_RATE=16000
+VOLCANO_ASR_BITS=16
+VOLCANO_ASR_CHANNEL=1
+ASR_STREAM_DEBUG=false
+
+# Spatius AvatarKit
 SPATIUS_API_KEY=
 SPATIUS_APP_ID=
 SPATIUS_REGION=us-west
@@ -179,176 +164,118 @@ SPATIUS_TOKEN_EXPIRE_MINUTES=30
 SPATIUS_INCLUDE_APP_ID_IN_TOKEN_REQUEST=false
 ```
 
-Frontend public variables live in `client/.env`:
+### client/.env
 
 ```bash
 VITE_SPATIUS_APP_ID=
 VITE_SPATIUS_AVATAR_ID=
 ```
 
-To switch to another Spatius digital human, for example an Asian interviewer avatar, update only this value in `client/.env`:
+**安全规则**：
+- API Key **只放** `server/.env`，绝对不要放到 `client/.env`
+- 不要把真实 key 写入文档或提交到 git
+- `.env` 文件已在 `.gitignore` 中排除
+- 缺少 Key 不会导致崩溃，系统自动 fallback
+
+## 7. Local Setup
 
 ```bash
-VITE_SPATIUS_AVATAR_ID=
-```
+# 安装依赖
+npm install
 
-Then restart `npm run dev` and click Connect Avatar again. Do not write the real Avatar ID into README or docs.
-
-Rules:
-
-- Never put `OPENAI_API_KEY` in `client/.env`.
-- Never put `DEEPSEEK_API_KEY` in `client/.env`.
-- Never put `SPATIUS_API_KEY` in `client/.env`.
-- Do not put a long-lived API key or manually minted `VITE_SPATIUS_SESSION_TOKEN` in the frontend.
-- The frontend requests a short-lived Session Token from the backend when Connect Avatar is clicked.
-- `.env` files are ignored by git.
-- Missing keys should not break the demo because fallback modes are built in.
-
-LLM provider options:
-
-```bash
-LLM_PROVIDER=openai
-LLM_PROVIDER=deepseek
-LLM_PROVIDER=mock
-```
-
-DeepSeek model options:
-
-```bash
-DEEPSEEK_MODEL=deepseek-v4-flash
-DEEPSEEK_MODEL=deepseek-v4-pro
-```
-
-`deepseek-v4-flash` is the default recommendation for AvaCoach because it is faster and lower cost for real-time interview follow-up. `deepseek-v4-pro` is better for more complex reasoning or higher-quality reports.
-
-TTS provider options:
-
-```bash
-TTS_PROVIDER=openai
-TTS_PROVIDER=volcano
-TTS_PROVIDER=mock
-```
-
-OpenAI and Volcano/Doubao are runnable TTS providers when their backend keys are configured. Volcano uses the V3 HTTP Chunked unidirectional endpoint and returns PCM audio chunks that AvaCoach concatenates into 16 kHz mono PCM16 before the frontend sends it to AvatarKit. Mock forces Browser Speech / Silent Text fallback.
-
-Question source options:
-
-```text
-AI Generated
-IT Question Bank
-```
-
-The local IT question bank is demo seed data. It is manually structured around common public interview topics and does not scrape, mirror, or store external website pages. It can be replaced later by an enterprise-owned question bank, JD-generated questions, or user-customized interview questions.
-
-## 8. How to Run
-
-Start both frontend and backend:
-
-```bash
+# 启动开发环境（前端 5173 + 后端 3001）
 npm run dev
-```
 
-Open:
-
-```text
-http://localhost:5173
-```
-
-Backend health check:
-
-```text
-http://localhost:3001/health
-```
-
-Build:
-
-```bash
+# 生产构建
 npm run build
 ```
 
+- 前端: `http://localhost:5173`
+- 后端: `http://localhost:3001`
+- 健康检查: `http://localhost:3001/health`
+
+## 8. Demo Script (2–3 分钟)
+
+1. 展示三栏 SaaS 工作台 UI 布局
+2. **Connect Avatar** → 等待状态变为 "Avatar 已连接"
+3. 选择岗位（如 Frontend Engineer）+ 题目来源（IT Question Bank）+ 难度 + Topic
+4. **Start Interview** → 数字人用中文提问，观察口型同步
+5. 等数字人说完 → 点击**开始语音回答**，说 5 秒中文回答
+6. **停止录音** → 观察实时 partial transcript 显示，最终填入回答框
+7. **Submit Answer** → 右侧展示评分、反馈、coveredPoints / missingPoints
+8. 重复 1–2 轮问答，观察 LLM 追问和知识点覆盖
+9. **End Interview** → 展示最终报告（综合评分 + 强弱项 + 知识点分析）
+10. **Reset Demo** → 验证状态完全清空，可重新开始
+
 ## 9. Fallback Strategy
 
-Fallback is part of the demo stability design, not an error state.
+Fallback 是 Demo 稳定性的设计一部分，不是异常状态。
 
-- IT question topic mismatch -> same-role fallback question.
-- IT question role mismatch -> behavioral fallback question.
-- IT question difficulty mismatch -> ignore difficulty and keep the flow running.
-- No OpenAI key -> mock interview logic.
-- No DeepSeek key -> mock interview logic.
-- `LLM_PROVIDER=mock` -> forced mock interview logic.
-- LLM request fails -> mock interview logic.
-- No backend TTS -> browser speech fallback.
-- Browser speech fallback does not drive avatar lip-sync.
-- Browser speech unavailable -> silent text mode.
-- No Spatius API key -> token fallback.
-- No Avatar ID -> avatar placeholder.
-- Avatar SDK failure in the future -> keep placeholder and text interview available.
+| 层级 | 降级路径 |
+|------|---------|
+| **AvatarKit** 失败 | → placeholder 占位符 + 文本面试模式 |
+| **TTS** 失败 | → Browser SpeechSynthesis → Silent Text Mode |
+| **ASR** 失败 | → Browser SpeechRecognition → 手动文字输入 |
+| **LLM** 失败 | → Mock Provider（内置 mock 逻辑） |
+| **Spatius Token** 失败 | → Token Fallback，Avatar placeholder 保持可用 |
+| **题库 Topic** 不匹配 | → 同 role fallback 题目 |
+| **题库 Role** 不匹配 | → behavioral fallback 题目 |
 
-This ensures the interview flow remains fully usable in live demos.
+核心面试流程**不依赖**任何单一外部 provider，确保在任何配置下 Demo 完整可用。
 
-## 10. Spatius Integration Notes
+## 10. Current Status
 
-Spatius is positioned as the digital human avatar rendering and driving layer.
+### ✅ 已完成
 
-In AvaCoach, Spatius is not the LLM and not the business logic engine. The planned role of Spatius is:
+- React + Express monorepo
+- Spatius AvatarKit Direct Mode 接入，真实 Avatar 渲染
+- Spatius Session Token 后端安全获取
+- Volcano TTS V3 HTTP Chunked 接入，输出 16kHz mono PCM16
+- TTS PCM16 驱动 AvatarKit 口型同步
+- Volcano Streaming ASR WebSocket proxy（bigmodel_async）
+- 浏览器麦克风实时采集 PCM16 / 16kHz / mono
+- ASR partial / final transcript 实时回填回答框
+- DeepSeek / OpenAI / Mock LLM provider 架构
+- 110 道中文 IT 面试题库（Frontend / Backend / AI / Behavioral）
+- expectedPoints / coveredPoints / missingPoints / improvementTips 评分体系
+- 中文反馈和最终报告
+- 面试流程状态保护（start → next → report → ended）
+- 3 轮面试引导结束
+- 三栏 SaaS 工作台 UI
+- 语音回答 + 文本回答双输入
+- Fallback 全覆盖
+- 安全日志（不输出 API Key / 完整音频 / token）
 
-- Render the digital human interviewer.
-- Drive the avatar with TTS audio.
-- Provide lip sync and motion.
-- Expose SDK state events to the UI.
+### 🔮 后续可优化
 
-Current Spatius-related work:
+- Production 部署
+- 报告导出真实 PDF
+- 题库扩充（企业/JD 定向）
+- 用户账号 / 历史记录
+- 使用分析
+- 多 Avatar 选择
+- TTS 音频流式传输
 
-- Backend Session Token endpoint completed and verified in Direct Mode.
-- API key kept backend-only.
-- `@spatius/avatarkit` installed.
-- Official-style Connect Avatar / Send Sample Audio path created.
-- Connect Avatar can load the real Avatar with configured App ID, Avatar ID, Session Token, and region.
-- Bundled sample PCM audio copied to `client/public/audio/quickstart_voice.pcm`.
-- Frontend state model prepared.
-- Fallback avatar placeholder active.
-- Volcano TTS can return 16 kHz mono PCM16 audio.
-- TTS audio pipeline can now drive AvatarKit lip-sync after conversion or raw PCM passthrough to PCM16 mono 16 kHz.
-- AvatarStage cleanup lifecycle bug fixed so Start Interview and Submit Answer do not destroy the connected runtime.
+## 11. Security Notes
 
-See [docs/spatius-integration.md](docs/spatius-integration.md).
+- `.env` / `*.env` 被 `.gitignore` 排除，永不上传
+- API Key 仅在 `server/.env`，前端永不接触
+- 前端仅接收短期 Session Token 和公开 ID
+- Debug 日志绝不输出 API Key / 完整音频 / 完整 token / raw hex
+- `X-Api-Key` 仅在 backend 使用 `env` 读取，代码中无硬编码
 
-## 11. Product Suggestions
+## 12. Known Warnings
 
-Based on this integration experience, the main suggestions for Spatius SDK are:
+- **AvatarKit WASM file not found**: `@spatius/avatarkit` Vite 插件在 build 时报告此 warning，但最终输出仍包含 WASM 相关 chunk，不影响功能。属于 packaging/path 层面的既有提示
+- **Chunk size > 500kB**: AvatarKit WASM (~1.3MB) 导致的既有 warning，不影响功能
+- `npm run build` 通过，以上 warning 均为非阻塞
 
-- Provide end-to-end business templates.
-- Improve audio format guidance.
-- Improve Session Token debugging.
-- Provide SDK state machine and UI mapping examples.
-- Provide a clear Direct Mode quickstart.
-- Provide local demo and troubleshooting checklist.
-- Explain SDK boundaries clearly.
-
-See [docs/product-suggestions.md](docs/product-suggestions.md).
-
-## 12. Future Work
-
-Next steps:
-
-- Improve generated TTS voice selection for the selected avatar.
-- Add robust ASR voice answers.
-- Add speech input / ASR.
-- Expand the seed IT question bank into enterprise role banks, JD-based generated banks, and custom user banks.
-- Add resume upload.
-- Add JD-based interview generation.
-- Add PDF report export.
-- Add real-time streaming.
-- Prepare production deployment.
-
-## Useful Docs
+## 参考文档
 
 - [Final Submission](docs/final-submission.md)
 - [Demo Script](docs/demo-script.md)
 - [Interview Pitch](docs/interview-pitch.md)
-- [Spatius Integration Notes](docs/spatius-integration.md)
-- [Product Suggestions](docs/product-suggestions.md)
-- [LLM Integration](docs/llm-integration.md)
+- [Spatius Integration](docs/spatius-integration.md)
 - [Provider Architecture](docs/provider-architecture.md)
 - [TTS Integration](docs/tts-integration.md)
 - [ASR Plan](docs/asr-plan.md)

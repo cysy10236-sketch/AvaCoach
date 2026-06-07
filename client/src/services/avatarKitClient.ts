@@ -11,6 +11,9 @@ import {
 import { fetchSpatiusSessionToken } from './spatiusApi'
 import type {
   AvatarKitRuntime,
+  AvatarSpeechSendResult,
+  AvatarRuntimeSnapshot,
+  AvatarRuntimeState,
   AvatarRuntimeDestroyReason,
   SpatiusConnectionState,
 } from '../types/spatius'
@@ -47,6 +50,9 @@ export async function createAvatarKitRuntime({
     throw new Error('Avatar SDK not configured: missing VITE_SPATIUS_APP_ID or VITE_SPATIUS_AVATAR_ID.')
   }
 
+  // Local runtime state is kept separately from UI labels so speech can make
+  // readiness decisions without guessing from display strings.
+  let earlyRuntimeState: AvatarRuntimeState = 'token_loading'
   onStateChange('token_loading', 'Requesting short-lived Spatius Session Token from AvaCoach backend.')
   const tokenResponse = await fetchSpatiusSessionToken()
   debugAvatarKit('session token response', {
@@ -66,6 +72,7 @@ export async function createAvatarKitRuntime({
     throw new Error(tokenResponse.message ?? 'Spatius Session Token fallback response received.')
   }
 
+  earlyRuntimeState = 'sdk_initializing'
   onStateChange('sdk_loading', 'Initializing AvatarKit with Direct Mode sample audio settings.')
   debugAvatarKit('sdk initialize started', {
     container: getContainerDebug(container),
@@ -114,6 +121,7 @@ export async function createAvatarKitRuntime({
     throw error
   }
 
+  earlyRuntimeState = 'avatar_loading'
   onStateChange('avatar_loading', 'Loading Spatius avatar assets.')
   debugAvatarKit('avatar load started', {
     avatarIdExists: Boolean(avatarId),
@@ -134,6 +142,7 @@ export async function createAvatarKitRuntime({
     })
     avatarView = new AvatarView(avatar, container)
     avatarView.onFirstRendering = () => {
+      setRuntimeState('render_ready')
       onStateChange('render_ready', 'Avatar render system is ready.')
       debugAvatarKit('avatar first rendering', {
         container: getContainerDebug(container),
@@ -152,6 +161,7 @@ export async function createAvatarKitRuntime({
   }
 
   const controller = avatarView.controller
+  let avatarRuntimeState: AvatarRuntimeState = earlyRuntimeState
   let latestConnectionState: ConnectionState | 'unknown' = 'unknown'
   let latestConversationState: ConversationState | 'unknown' = 'unknown'
   let controllerStarted = false
@@ -160,8 +170,70 @@ export async function createAvatarKitRuntime({
   let sampleStateTimer: number | null = null
   let speechStateTimer: number | null = null
   let activeAudioKind: 'sample' | 'speech' | null = null
-  let pendingSpeechResolve: (() => void) | null = null
+  let pendingSpeechResolve: ((result: AvatarSpeechSendResult) => void) | null = null
   let pendingSpeechReject: ((error: Error) => void) | null = null
+  let readyWaiters: Array<(ready: boolean) => void> = []
+  let idleWaiters: Array<(idle: boolean) => void> = []
+
+  const setRuntimeState = (nextState: AvatarRuntimeState) => {
+    avatarRuntimeState = nextState
+  }
+  const getSnapshot = (): AvatarRuntimeSnapshot => ({
+    avatarRuntimeState,
+    connectionState: String(latestConnectionState),
+    conversationState: String(latestConversationState),
+    controllerStarted,
+    isReady: controllerStarted && latestConnectionState === ConnectionState.connected,
+  })
+  const notifyReadyWaiters = () => {
+    if (controllerStarted && latestConnectionState === ConnectionState.connected) {
+      readyWaiters.forEach((resolve) => resolve(true))
+      readyWaiters = []
+    }
+  }
+  const notifyIdleWaiters = () => {
+    if (latestConversationState === ConversationState.idle) {
+      idleWaiters.forEach((resolve) => resolve(true))
+      idleWaiters = []
+    }
+  }
+  const waitForReady = (timeoutMs = 5000): Promise<boolean> => {
+    if (controllerStarted && latestConnectionState === ConnectionState.connected) {
+      return Promise.resolve(true)
+    }
+
+    return new Promise((resolve) => {
+      const timeoutId = window.setTimeout(() => {
+        readyWaiters = readyWaiters.filter((waiter) => waiter !== finish)
+        resolve(false)
+      }, timeoutMs)
+      const finish = (ready: boolean) => {
+        window.clearTimeout(timeoutId)
+        resolve(ready)
+      }
+      readyWaiters.push(finish)
+    })
+  }
+  const waitForIdle = (timeoutMs = 1200): Promise<boolean> => {
+    if (
+      latestConversationState === ConversationState.idle ||
+      latestConversationState === 'unknown'
+    ) {
+      return Promise.resolve(true)
+    }
+
+    return new Promise((resolve) => {
+      const timeoutId = window.setTimeout(() => {
+        idleWaiters = idleWaiters.filter((waiter) => waiter !== finish)
+        resolve(false)
+      }, timeoutMs)
+      const finish = (idle: boolean) => {
+        window.clearTimeout(timeoutId)
+        resolve(idle)
+      }
+      idleWaiters.push(finish)
+    })
+  }
 
   controller.onConversationState = (conversationState) => {
     latestConversationState = conversationState
@@ -176,6 +248,7 @@ export async function createAvatarKitRuntime({
           window.clearTimeout(speechStateTimer)
           speechStateTimer = null
         }
+        setRuntimeState('speaking')
         onStateChange('avatar_speaking', 'Avatar is speaking the interviewer reply with TTS lip-sync.')
       } else {
         samplePlaybackObserved = true
@@ -198,19 +271,28 @@ export async function createAvatarKitRuntime({
 
       if (activeAudioKind === 'speech' && avatarSpeechObserved) {
         activeAudioKind = null
+        setRuntimeState('speech_finished')
         onStateChange('avatar_speech_finished', 'Avatar finished speaking. Listening for candidate answer.')
-        pendingSpeechResolve?.()
+        pendingSpeechResolve?.({
+          sent: true,
+          conversationIdReturned: true,
+          playingObserved: true,
+          shouldFallback: false,
+        })
         pendingSpeechResolve = null
         pendingSpeechReject = null
       } else if (samplePlaybackObserved) {
         activeAudioKind = null
         onStateChange('sample_audio_finished', 'Sample audio finished. Avatar is ready for another test.')
       } else {
+        setRuntimeState('connected')
         onStateChange('avatar_connected', 'Avatar is idle and ready for bundled sample audio.')
       }
+      notifyIdleWaiters()
     }
   }
 
+  setRuntimeState('connecting')
   onStateChange('sdk_loading', 'Connecting AvatarKit to the Spatius Motion Server.')
   await controller.initializeAudioContext()
   debugAvatarKit('audio context initialized', {
@@ -221,6 +303,16 @@ export async function createAvatarKitRuntime({
     onStateChange,
     (state) => {
       latestConnectionState = state
+      if (state === ConnectionState.connected) {
+        setRuntimeState('connected')
+        notifyReadyWaiters()
+      } else if (state === ConnectionState.failed) {
+        setRuntimeState('error')
+      } else if (String(state) === 'disconnected') {
+        setRuntimeState('disconnected')
+      } else {
+        setRuntimeState('connecting')
+      }
     },
   )
   debugAvatarKit('controller.start called', {
@@ -232,10 +324,13 @@ export async function createAvatarKitRuntime({
       debugAvatarKit('controller.start success', {
         connectionStateAfterStart: String(latestConnectionState),
       })
+      notifyReadyWaiters()
     }),
     animationChannelReady,
   ])
 
+  setRuntimeState('connected')
+  notifyReadyWaiters()
   onStateChange('avatar_connected', 'Real Avatar Connected. Ready to send bundled sample PCM audio.')
 
   return {
@@ -321,8 +416,17 @@ export async function createAvatarKitRuntime({
     },
     speakPcm: async (pcmArrayBuffer) => {
       pendingSpeechReject?.(new Error('Interrupted by a newer AvatarKit speech request.'))
+      const ready = await waitForReady(5000)
+      if (!ready) {
+        throw new Error('Avatar not ready timeout.')
+      }
 
-      await new Promise<void>((resolve, reject) => {
+      if (latestConversationState === ConversationState.playing) {
+        controller.interrupt()
+        await waitForIdle(1200)
+      }
+
+      return new Promise<AvatarSpeechSendResult>((resolve, reject) => {
         pendingSpeechResolve = resolve
         pendingSpeechReject = reject
         try {
@@ -345,11 +449,17 @@ export async function createAvatarKitRuntime({
             markSpeechStarted: () => {
               avatarSpeechObserved = false
               activeAudioKind = 'speech'
+              setRuntimeState('speech_sending')
             },
             onFailed: (error) => {
               pendingSpeechResolve = null
               pendingSpeechReject = null
               reject(error)
+            },
+            onAcceptedWithoutPlayingObserved: (result) => {
+              pendingSpeechResolve = null
+              pendingSpeechReject = null
+              resolve(result)
             },
           })
         } catch (error) {
@@ -359,6 +469,8 @@ export async function createAvatarKitRuntime({
         }
       })
     },
+    waitForReady,
+    getSnapshot,
     interrupt: () => {
       activeAudioKind = null
       samplePlaybackObserved = false
@@ -377,6 +489,7 @@ export async function createAvatarKitRuntime({
       pendingSpeechReject = null
     },
     destroy: (reason: AvatarRuntimeDestroyReason = 'unknown') => {
+      setRuntimeState('disconnected')
       debugAvatarLifecycleDestroy(reason)
       debugAvatarKit('runtime destroy started', { reason })
       if (sampleStateTimer) {
@@ -386,6 +499,10 @@ export async function createAvatarKitRuntime({
         window.clearTimeout(speechStateTimer)
       }
       controller.close()
+      readyWaiters.forEach((resolve) => resolve(false))
+      idleWaiters.forEach((resolve) => resolve(false))
+      readyWaiters = []
+      idleWaiters = []
       pendingSpeechReject?.(new Error('AvatarKit runtime destroyed.'))
       avatarView.dispose()
       AvatarSDK.cleanup()
@@ -485,6 +602,7 @@ async function sendAvatarPcm({
   clearSpeechTimer,
   markSpeechStarted,
   onFailed,
+  onAcceptedWithoutPlayingObserved,
 }: {
   audioData: ArrayBuffer
   onStateChange: (state: SpatiusConnectionState, message: string) => void
@@ -496,6 +614,7 @@ async function sendAvatarPcm({
   clearSpeechTimer: () => void
   markSpeechStarted: () => void
   onFailed: (error: Error) => void
+  onAcceptedWithoutPlayingObserved: (result: AvatarSpeechSendResult) => void
 }) {
   if (!getControllerStarted()) {
     const message = 'controller.start has not completed. Browser speech fallback should be used.'
@@ -539,6 +658,12 @@ async function sendAvatarPcm({
 
   const conversationId = controller.send(audioData, true)
 
+  debugSpeechLifecycle('avatar speech send completed', {
+    speechSendCalled: true,
+    conversationIdReturned: Boolean(conversationId),
+    connectionState: String(getConnectionState()),
+    conversationState: String(getConversationState()),
+  })
   debugAvatarKit('avatar speech send success', {
     conversationIdReturned: Boolean(conversationId),
     conversationStateAfterSend: String(getConversationState()),
@@ -559,17 +684,37 @@ async function sendAvatarPcm({
       connectionState: String(getConnectionState()),
       conversationState: String(getConversationState()),
     })
+    debugSpeechLifecycle('avatar speech accepted without playing observation', {
+      avatarSendSucceeded: true,
+      conversationIdReturned: true,
+      playingObserved: false,
+      browserFallbackTriggered: false,
+      fallbackReason: 'avatar-send-success-playing-not-observed',
+      finalVoiceMode: 'avatar-tts',
+      connectionState: String(getConnectionState()),
+      conversationState: String(getConversationState()),
+    })
     onStateChange(
-      'avatar_speech_failed',
-      'TTS PCM was sent, but AvatarKit did not enter playing state. Browser speech fallback remains available.',
+      'avatar_speech_sending',
+      'TTS PCM was sent to AvatarKit; playback state is not confirmed yet.',
     )
-    onFailed(new Error('AvatarKit did not enter playing state after TTS PCM send.'))
+    onAcceptedWithoutPlayingObserved({
+      sent: true,
+      conversationIdReturned: true,
+      playingObserved: false,
+      shouldFallback: false,
+      fallbackReason: 'avatar-send-success-playing-not-observed',
+    })
   }, 2500)
   onSpeechTimer(timer)
 }
 
 function debugAvatarKit(message: string, details: Record<string, unknown>) {
   console.info('[AvaCoach AvatarKit]', message, details)
+}
+
+function debugSpeechLifecycle(message: string, details: Record<string, unknown>) {
+  console.info('[AvaCoach Speech Lifecycle]', message, details)
 }
 
 function debugAvatarLifecycleDestroy(reason: AvatarRuntimeDestroyReason) {

@@ -19,6 +19,7 @@ export type InterviewStage =
 export type Speaker = "interviewer" | "candidate";
 export type ResponseSource = "llm" | "mock" | "bank";
 export type LlmProvider = "openai" | "deepseek" | "mock";
+export type InterviewFlowStatus = "in_progress" | "ended";
 
 export interface Message {
   id: string;
@@ -68,6 +69,9 @@ export interface StartInterviewResponse {
   source?: ResponseSource;
   provider?: LlmProvider;
   questionMeta?: QuestionMeta;
+  status?: InterviewFlowStatus;
+  nextAllowed?: boolean;
+  reportReady?: boolean;
 }
 
 export interface NextInterviewRequest {
@@ -75,6 +79,7 @@ export interface NextInterviewRequest {
   answer: string;
   history: Message[];
   questionMeta?: QuestionMeta;
+  status?: InterviewFlowStatus;
 }
 
 export interface NextInterviewResponse {
@@ -87,6 +92,10 @@ export interface NextInterviewResponse {
   provider?: LlmProvider;
   questionMeta?: QuestionMeta;
   knowledgeFeedback?: KnowledgeFeedback;
+  status?: InterviewFlowStatus;
+  nextAllowed?: boolean;
+  reportReady?: boolean;
+  message?: string;
 }
 
 export interface ReportInterviewRequest {
@@ -103,4 +112,7 @@ export interface ReportInterviewResponse {
   source?: ResponseSource;
   provider?: LlmProvider;
   bankReport?: BankReportSummary;
+  status?: InterviewFlowStatus;
+  nextAllowed?: boolean;
+  reportReady?: boolean;
 }
