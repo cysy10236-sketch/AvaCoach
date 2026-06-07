@@ -1,5 +1,3 @@
-import { getApiUrl } from './apiConfig'
-
 export type SpatiusClientStatus =
   | 'not-connected'
   | 'fallback'
@@ -18,7 +16,7 @@ export interface SpatiusSessionTokenResponse {
 }
 
 export async function fetchSpatiusSessionToken(): Promise<SpatiusSessionTokenResponse> {
-  const response = await fetch(getApiUrl('/api/spatius/session-token'))
+  const response = await fetch('/api/spatius/session-token')
 
   if (!response.ok) {
     throw new Error(`Failed to fetch Spatius session token: ${response.status}`)

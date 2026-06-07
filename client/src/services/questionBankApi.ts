@@ -3,7 +3,6 @@ import type {
   QuestionDifficulty,
   QuestionMeta,
 } from '../types/interview'
-import { getApiUrl } from './apiConfig'
 
 export interface QuestionBankQuestion extends QuestionMeta {
   question: string
@@ -12,7 +11,7 @@ export interface QuestionBankQuestion extends QuestionMeta {
 }
 
 export async function fetchQuestionBankTopics(role: InterviewRole): Promise<string[]> {
-  const response = await fetch(getApiUrl(`/api/question-bank/topics?role=${encodeURIComponent(role)}`))
+  const response = await fetch(`/api/question-bank/topics?role=${encodeURIComponent(role)}`)
 
   if (!response.ok) {
     throw new Error(`Question bank topics request failed: ${response.status}`)
@@ -31,7 +30,7 @@ export async function pickQuestionBankQuestion({
   difficulty?: QuestionDifficulty
   topic?: string
 }): Promise<QuestionBankQuestion> {
-  const response = await fetch(getApiUrl('/api/question-bank/pick'), {
+  const response = await fetch('/api/question-bank/pick', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

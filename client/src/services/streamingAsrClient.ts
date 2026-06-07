@@ -1,5 +1,3 @@
-import { getApiBaseUrl } from './apiConfig'
-
 export type StreamingAsrStatus =
   | 'ready'
   | 'connecting'
@@ -39,11 +37,9 @@ export function createStreamingAsrClient(
 ): StreamingAsrClient {
   callbacks.onStatus?.('connecting')
 
-  // 生产使用 VITE_API_BASE_URL；开发通过 Vite proxy (ws: true) 转发
-  const apiBase = getApiBaseUrl()
-  const wsUrl = apiBase
-    ? `${apiBase.replace(/^http/, 'ws')}/api/asr/stream`
-    : `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/api/asr/stream`
+  // 开发环境 Vite 代理已配置 ws: true，统一走 /api/asr/stream
+  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+  const wsUrl = `${protocol}://${window.location.host}/api/asr/stream`
 
   safeDebug('ws connecting', { wsUrl })
 
