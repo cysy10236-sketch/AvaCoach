@@ -1,40 +1,95 @@
 import type { VoiceMode } from '../services/speechPlayer'
 import type { SpatiusRuntimeStatus } from '../types/spatius'
 
+type AsrMode = 'stream' | 'browser' | 'mock' | 'unavailable'
+
 interface SystemNoticeProps {
-  error: string | null
+  asrError: string | null
+  asrMode: AsrMode
+  interviewError: string | null
+  isRecording: boolean
+  isTranscribing: boolean
   spatiusStatus: SpatiusRuntimeStatus
   voiceMode: VoiceMode
+  voiceNotice: string | null
 }
 
-function SystemNotice({ error, spatiusStatus, voiceMode }: SystemNoticeProps) {
-  const notices = Array.from(new Set([
-    spatiusStatus.connectionState === 'connected'
-      ? 'Spatius real avatar is connected.'
-      : spatiusStatus.connectionState === 'not_configured'
-        ? 'Avatar SDK not configured. Placeholder demo remains usable.'
-        : spatiusStatus.connectionState === 'error'
-          ? 'Avatar SDK failed, fallback demo remains usable.'
-          : 'Avatar placeholder is available while SDK connection is pending.',
-    voiceMode === 'avatar-tts'
-      ? 'Avatar TTS Lip-Sync is active for interviewer replies.'
-      : voiceMode === 'sample-pcm'
-        ? 'Sample PCM mode validates AvatarKit audio driving.'
-        : voiceMode === 'silent'
-          ? 'Fallback demo is active. The interview flow remains fully usable.'
-          : voiceMode === 'browser'
-            ? 'Browser speech fallback is active. It does not drive avatar lip-sync.'
-            : 'TTS audio is active for interviewer replies.',
-    error,
-  ].filter((notice): notice is string => Boolean(notice))))
+function SystemNotice({
+  asrError,
+  asrMode,
+  interviewError,
+  isRecording,
+  isTranscribing,
+  spatiusStatus,
+  voiceMode,
+  voiceNotice,
+}: SystemNoticeProps) {
+  const notices = [
+    isAvatarConnected(spatiusStatus)
+      ? 'Avatar 已连接，数字人渲染与口型同步可用。'
+      : 'Avatar fallback 可用，面试流程保持稳定。',
+    getVoiceNotice(voiceMode),
+    getAsrNotice(asrMode, isRecording, isTranscribing),
+    voiceNotice,
+    asrError,
+    interviewError,
+  ].filter((notice): notice is string => Boolean(notice))
 
   return (
-    <section className="system-notice" aria-label="Demo status">
-      {notices.map((notice) => (
+    <section className="system-notice" aria-label="系统状态">
+      {Array.from(new Set(notices)).map((notice) => (
         <p key={notice}>{notice}</p>
       ))}
     </section>
   )
+}
+
+function isAvatarConnected(status: SpatiusRuntimeStatus) {
+  return status.connectionState === 'connected' || status.connectionState === 'avatar_connected'
+}
+
+function getVoiceNotice(voiceMode: VoiceMode) {
+  if (voiceMode === 'avatar-tts') {
+    return 'Voice: Avatar TTS Lip-Sync'
+  }
+
+  if (voiceMode === 'sample-pcm') {
+    return 'Voice: Sample PCM 验证模式'
+  }
+
+  if (voiceMode === 'browser') {
+    return 'Voice: 浏览器语音 fallback，不驱动口型'
+  }
+
+  return 'Voice: 文本模式 fallback'
+}
+
+function getAsrNotice(
+  asrMode: AsrMode,
+  isRecording: boolean,
+  isTranscribing: boolean,
+): string {
+  if (isRecording) {
+    return 'ASR: Recording / Partial Transcript'
+  }
+
+  if (isTranscribing) {
+    return 'ASR: Recognizing / Waiting Final'
+  }
+
+  if (asrMode === 'stream') {
+    return 'ASR: Volcano Streaming Ready'
+  }
+
+  if (asrMode === 'browser') {
+    return 'ASR: Browser Speech Ready'
+  }
+
+  if (asrMode === 'mock') {
+    return 'ASR: Fallback Active'
+  }
+
+  return 'ASR: Manual Input'
 }
 
 export default SystemNotice
