@@ -1,3 +1,5 @@
+import { getApiUrl } from './apiConfig'
+
 export interface TtsFallbackResponse {
   source: 'browser-fallback'
   fallback: true
@@ -18,7 +20,7 @@ export async function fetchTtsAudio(
   text: string,
   signal?: AbortSignal,
 ): Promise<TtsApiResponse> {
-  const response = await fetch('/api/tts', {
+  const response = await fetch(getApiUrl('/api/tts'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

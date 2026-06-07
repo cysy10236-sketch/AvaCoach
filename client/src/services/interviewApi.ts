@@ -8,12 +8,13 @@ import type {
   StartInterviewResponse,
   InterviewFlowStatus,
 } from '../types/interview'
+import { getApiUrl } from './apiConfig'
 
 async function postJson<TResponse>(
   path: string,
   body: Record<string, unknown>,
 ): Promise<TResponse> {
-  const response = await fetch(path, {
+  const response = await fetch(getApiUrl(path), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
