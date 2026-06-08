@@ -12,7 +12,36 @@ npm run dev
 
 如果现场只出现 AvatarKit WASM / chunk size warning，可以说明这是已知非阻塞 warning，build 通过且 demo 可运行。
 
-## 2-4 分钟演示顺序
+> **演示前建议先跑一遍冒烟测试**：`node scripts/smoke-demo-flow.mjs`（需要后端已启动）。确认 44 项 core flow 全部 PASS 后再开始演示。
+
+---
+
+## 演示模式选择
+
+根据现场是否有外部服务 Key 和额度，选择以下两种模式之一：
+
+### Safe Fallback Mode（无 Key / 无额度，推荐面试官首次试用）
+
+无需 Spatius、Volcano TTS、Volcano ASR 或 LLM API Key。Avatar 区显示 placeholder，面试流程完全通过文字交互完成。
+
+**1-2 分钟快速演示**：
+
+1. 打开页面，说明 AvaCoach 是中文 IT 数字人模拟面试训练系统。
+2. 指着 Avatar 区 placeholder："Spatius 数字人额度现在不启用，但核心面试流程完全不受影响。"
+3. 选择 IT 题库 / Frontend / React / 中等。
+4. 点击 Start Interview → 面试官问题出现在对话区。
+5. 在回答框输入一段回答（可使用下方推荐回答）。
+6. 点击 Submit Answer → 右侧展示 score、coveredPoints、missingPoints、improvementTips、scoringReason。
+7. 第二轮输入"我不会，可以换一道吗？" → Ava 自然换题，不结束。
+8. 第三轮提交后系统提示生成报告。
+9. 点击 End Interview → 展示 Final Report。
+10. 强调："题库、评分和报告完全不依赖外部 API Key，clone 后即可跑通。"
+
+### Full Demo Mode（有完整 Key 和额度）
+
+需要 Spatius API Key + App ID + Avatar ID + 可用额度，以及 Volcano TTS/ASR 和 LLM Key。
+
+**2-4 分钟完整演示**：
 
 1. 打开页面，介绍 AvaCoach 是中文 IT 数字人模拟面试训练系统。
 2. 说明 Spatius 是 avatar rendering / lip-sync layer，不是 LLM，也不是 TTS。
@@ -55,6 +84,8 @@ npm run dev
 
 ## 推荐演示回答
 
+### Full Demo Mode 推荐回答
+
 Frontend / React / medium:
 
 > 我在一个后台系统里做过 React 性能优化。当时列表页有大量筛选条件和表格渲染，首屏和交互都有卡顿。我先用 React Profiler 和浏览器 Performance 定位重渲染来源，然后把表格行组件拆分，用 memo 控制重复渲染，把筛选计算放到 useMemo，并对接口结果做分页和缓存。上线后首屏耗时大概降低了 30%，用户操作卡顿明显减少。
@@ -91,3 +122,31 @@ Frontend / React / medium:
 核心话术：
 
 > Fallback 是为了保证演示稳定性。即使某个外部 provider 失败，完整面试流程仍然可以展示。
+
+### Safe Fallback Mode 推荐回答
+
+Frontend / React / medium（文字版，不依赖语音）：
+
+> Context 适合全局状态共享，比如主题、用户认证信息等跨组件传递的场景。但频繁更新会导致所有消费者重渲染。我在项目里的做法是把不同关注点的状态拆分到独立 Context 中，然后用 useMemo 缓存 Context value，配合 React.memo 减少不必要的渲染。
+
+换题演示（Safe Fallback）：
+
+> 这个知识点我不太熟，可以换一道吗？
+
+薪资/流程演示（Safe Fallback）：
+
+> 这个岗位的薪资范围大概是多少？
+
+### Safe Fallback 演示话术
+
+可以这样介绍 Avatar placeholder：
+
+> 当前 Avatar 区显示的是 placeholder 状态，因为 Spatius 数字人额度有限。但这也说明了一个设计原则：核心面试流程——题库、评分、反馈和报告——不依赖任何单一外部 provider。
+
+可以这样介绍 mock LLM：
+
+> 现在用的是 mock LLM provider，它返回预设的中文反馈和评分。如果配置了 DeepSeek 或 OpenAI 的 Key，同样的代码会走真实 LLM，生成更个性化的追问和综合评价。
+
+可以这样总结：
+
+> 这个项目从架构上把 Avatar、TTS、ASR、LLM 都做成了可替换的 provider。即使你 clone 后没有任何外部 Key，也可以完整看到题库、问答、评分和报告的闭环。

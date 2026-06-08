@@ -57,9 +57,33 @@ AvaCoach 是一个面向面试训练场景的数字人 demo/prototype。它不�
 - 中文为主，必要技术术语保留英文。
 - 明确 demo/prototype 边界，不夸大为生产系统。
 
+## Demo Modes
+
+### Safe Fallback Mode（零配置演示）
+
+不需要任何外部 API Key。克隆后 `cp server/.env.example server/.env` 即可运行。
+
+- Avatar 区显示 placeholder
+- 面试官使用 mock LLM + 题库
+- 语音使用浏览器内置 TTS
+- 文字输入为主
+- 题库评分和报告完全可用
+
+### Full Demo Mode（完整数字人效果）
+
+需要 Spatius + Volcano TTS + Volcano ASR + LLM API Key 和额度。
+
+- 真实数字人 Avatar 渲染和口型同步
+- Volcano TTS 生成面试官中文语音
+- Volcano Streaming ASR 实时识别候选人回答
+- LLM 生成自然追问和综合评价
+
+两种模式共享同一套代码、同一套题库、同一套评分逻辑和同一套状态机。
+
 ## Non-goals
 
 - 不做生产级用户系统。
 - 不保存真实候选人录音或敏感信息。
 - 不在前端暴露 API Key。
 - 不把 fallback 描述为失败，而是演示稳定性的保护层。
+- 核心面试流程（选题 → 问答 → 评分 → 报告）不依赖任何单一外部 provider。
