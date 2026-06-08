@@ -23,7 +23,7 @@ const roleProfiles: Record<
     firstQuestion:
       "请你先做一个简短的自我介绍，并说明你为什么适合前端工程师这个岗位。",
     followUps: [
-      "你能结合一个实际项目，说说你如何定位并优化前端性能问题吗？",
+      "你能结合一个实际项目，说明你如何定位并优化前端性能问题吗？",
       "如果一个复杂页面出现交互卡顿，你会如何拆解和排查？",
       "你在组件化或工程化方面做过哪些改进，最后带来了什么结果？",
     ],
@@ -36,7 +36,7 @@ const roleProfiles: Record<
     firstQuestion:
       "请你先做一个简短的自我介绍，并说明你为什么适合后端工程师这个岗位。",
     followUps: [
-      "你能结合一个项目，说说你如何设计稳定的 API 边界吗？",
+      "你能结合一个项目，说明你如何设计稳定的 API 边界吗？",
       "如果线上接口突然变慢，你会如何定位瓶颈并降低影响？",
       "请分享一次你优化数据库、缓存或服务可靠性的经历。",
     ],
@@ -50,7 +50,7 @@ const roleProfiles: Record<
       "请你先做一个简短的自我介绍，并说明你为什么适合产品经理这个岗位。",
     followUps: [
       "你能举例说明你如何判断一个需求是否值得做吗？",
-      "当业务目标和用户体验发生冲突时，你通常如何做取舍？",
+      "当业务目标和用户体验发生冲突时，你通常如何取舍？",
       "请分享一次你通过数据或用户反馈推动产品迭代的经历。",
     ],
     keywords: ["用户", "需求", "数据", "指标", "优先级", "增长", "体验"],
@@ -62,7 +62,7 @@ const roleProfiles: Record<
     firstQuestion:
       "请你先做一个简短的自我介绍，并说明你为什么适合 AI 工程师这个岗位。",
     followUps: [
-      "你能结合一个 AI 项目，说说你如何评估模型效果吗？",
+      "你能结合一个 AI 项目，说明你如何评估模型效果吗？",
       "如果线上模型回答不稳定，你会如何定位并改进？",
       "请分享一次你把模型能力集成到真实产品流程中的经历。",
     ],
@@ -90,6 +90,8 @@ export function createStartResponse(role: InterviewRole): StartInterviewResponse
     replyText: `${profile.opening} ${profile.firstQuestion}`,
     question: profile.firstQuestion,
     stage: "asking",
+    source: "mock",
+    provider: "mock",
     status: "in_progress",
     nextAllowed: true,
     reportReady: false,
@@ -107,15 +109,22 @@ export function createNextResponse(
   const score = scoreAnswer(answer, profile.keywords);
   const shouldEnd = candidateRounds >= 3;
   const nextQuestion = createNextQuestion(answer, profile.followUps[roundIndex % profile.followUps.length]);
+  const feedbackText = createFeedback(score, answer);
+  const suggestion = createSuggestion(score, answer);
 
   return {
     replyText: shouldEnd
-      ? "这轮回答我已经了解了。当前练习轮次已经完成，请点击 End Interview 查看完整报告。"
-      : nextQuestion,
+      ? `${feedbackText} 当前练习轮次已经完成，请点击 End Interview 查看完整报告。`
+      : `${feedbackText} ${nextQuestion}`,
     score,
-    feedback: createFeedback(score, answer),
-    suggestion: createSuggestion(score, answer),
+    feedback: feedbackText,
+    suggestion,
     shouldEnd,
+    source: "mock",
+    provider: "mock",
+    feedbackText,
+    nextQuestion: shouldEnd ? "" : nextQuestion,
+    scoringReason: "Mock fallback uses answer length, role keywords, structure, and concrete evidence.",
     status: shouldEnd ? "ended" : "in_progress",
     nextAllowed: !shouldEnd,
     reportReady: shouldEnd,
@@ -135,8 +144,8 @@ export function createReportResponse(
         answers.reduce((sum, answer) => sum + scoreAnswer(answer, profile.keywords), 0) /
           answers.length,
       )
-    : 6;
-  const overallScore = Math.min(95, Math.max(55, average * 10 + answers.length * 2));
+    : 60;
+  const overallScore = Math.min(96, Math.max(55, average + answers.length * 2));
 
   return {
     overallScore,
@@ -153,6 +162,8 @@ export function createReportResponse(
       "多补充项目数据、决策依据和最终结果",
       "回答结尾主动总结和岗位能力的匹配点",
     ],
+    source: "mock",
+    provider: "mock",
     status: "ended",
     nextAllowed: false,
     reportReady: true,
@@ -161,39 +172,41 @@ export function createReportResponse(
 
 function createNextQuestion(answer: string, defaultQuestion: string): string {
   if (isCompensationQuestion(answer)) {
-    return "薪资和福利通常会在 HR 或后续流程里详细沟通。我们先回到当前技术面试：请你结合一个项目，说说你在核心技术问题上的具体处理过程。";
+    return "薪资和福利通常会在 HR 或后续流程里详细沟通。我们先回到当前面试：请你结合一个项目，说明你在核心问题上的具体处理过程。";
   }
 
   if (isQuestionChangeRequest(answer)) {
-    return "可以，我们换一个相关但更具体的问题。请你从最近做过的项目里选一个模块，说明你负责的技术决策和最终结果。";
+    return "可以，我们换一个相关但更基础的问题。请你从最近做过的项目里选一个模块，说明你负责的技术决策和最终结果。";
   }
 
   if (isShortUnknownAnswer(answer)) {
     return "没关系，我们换一个更基础的角度。你可以先说说这个知识点在实际项目里通常解决什么问题。";
   }
 
-  return `你的回答方向是成立的，不过如果能结合具体场景会更完整。我继续追问一个相关问题：${defaultQuestion}`;
+  return `我继续追问一个相关问题：${defaultQuestion}`;
 }
 
 function scoreAnswer(answer: string, keywords: string[]): number {
   const normalized = answer.toLowerCase();
-  const lengthScore = answer.trim().length >= 180 ? 3 : answer.trim().length >= 80 ? 2 : 1;
+  const lengthScore = answer.trim().length >= 180 ? 18 : answer.trim().length >= 80 ? 12 : 5;
   const keywordScore = keywords.reduce(
-    (count, keyword) => count + (normalized.includes(keyword.toLowerCase()) ? 1 : 0),
+    (count, keyword) => count + (normalized.includes(keyword.toLowerCase()) ? 4 : 0),
     0,
   );
   const structureScore = ["背景", "行动", "结果", "star", "指标", "复盘"].some((keyword) =>
     normalized.includes(keyword),
   )
-    ? 1
+    ? 8
     : 0;
+  const evidenceScore = /(\d+%?|\d+\s*(ms|秒|人|次|万)|上线|项目|数据|指标)/i.test(answer) ? 8 : 0;
+  const unknownCap = isShortUnknownAnswer(answer) ? 55 : 95;
 
-  return Math.min(10, Math.max(4, 4 + lengthScore + keywordScore + structureScore));
+  return Math.min(unknownCap, Math.max(40, 50 + lengthScore + keywordScore + structureScore + evidenceScore));
 }
 
 function createFeedback(score: number, answer: string): string {
-  if (score >= 8) {
-    return "回答比较清晰，能体现岗位相关经验，并且有一定结构感。";
+  if (score >= 82) {
+    return "这轮回答比较清晰，能体现岗位相关经验，并且有一定结构感。";
   }
 
   if (answer.trim().length < 80) {
@@ -204,7 +217,7 @@ function createFeedback(score: number, answer: string): string {
 }
 
 function createSuggestion(score: number, answer: string): string {
-  if (score >= 8) {
+  if (score >= 82) {
     return "建议进一步补充量化结果，让优势更有说服力。";
   }
 
@@ -220,9 +233,9 @@ function isCompensationQuestion(answer: string): boolean {
 }
 
 function isQuestionChangeRequest(answer: string): boolean {
-  return /换.*题|换.*问题|换一.*道|不太熟|不会|没做过/i.test(answer) && answer.length > 8;
+  return /换.*题|换.*问题|换一个|不太熟|不会|没做过/i.test(answer) && answer.length > 8;
 }
 
 function isShortUnknownAnswer(answer: string): boolean {
-  return /^(不会|不知道|不清楚|没做过|不了解|不会。|不知道。|不清楚。)$/i.test(answer.trim());
+  return /^(不会|不太会|不知道|不清楚|没做过|不了解|不会。|不知道。|不清楚。)$/i.test(answer.trim());
 }

@@ -1,81 +1,129 @@
-# Spatius SDK Integration Notes
+# Spatius Integration
 
-## 1. Integration Goal
+## Why Direct Mode
 
-Spatius 在 AvaCoach 中是**数字人渲染和驱动层**。它不负责面试逻辑、LLM 或 TTS 生成。它负责将数字人面试官渲染到浏览器，并用 TTS 音频驱动口型同步。
+AvaCoach 使用 Spatius AvatarKit Direct Mode，因为它适合浏览器端真实数字人渲染，同时允许后端安全签发短期 Session Token。API Key 不进入前端，前端只拿到可用于 SDK 初始化的短期 token。
 
-## 2. Current Integration Status — ✅ 已接入
+## Role in AvaCoach
 
-### ✅ 已完成
-- **Backend Session Token**: `GET /api/spatius/session-token` — Direct Mode Token 安全获取
-- **AvatarKit SDK**: `@spatius/avatarkit` 安装、初始化、Avatar 加载、AvatarView 渲染
-- **Direct Mode 连接**: SDK Init → Session Token → Load Avatar → Controller Start → Motion Server Connect
-- **Sample PCM 验证**: 官方 quickstart_voice.pcm 验证 AvatarKit 渲染和口型
-- **TTS Lip-sync**: Volcano TTS 16kHz PCM16 → `controller.send(pcm, true)` → 口型驱动
-- **Runtime 生命周期**: Start Interview / Submit Answer 不会销毁 AvatarKit runtime
-- **Fallback**: placeholder 在所有失败路径中保持可用
-- **安全**: API Key 仅 backend，前端只收短期 Token + 公开 ID
+Spatius 负责：
 
-### 🔮 后续
-- Token 过期前自动刷新
-- Production-grade 错误处理和遥测
-- 多 Avatar 选择
+- Avatar rendering。
+- Motion server connection。
+- 接收 PCM16 音频。
+- 驱动数字人口型同步。
 
-## 3. Session Token Flow
+Spatius 不负责：
 
-```
-1. 用户点击 Connect Avatar
-2. 前端 → GET /api/spatius/session-token
-3. 后端 → POST Spatius Console API (X-Api-Key header)
-4. 后端 → 返回短期 Session Token
-5. 前端 → AvatarSDK.setSessionToken(...)
-6. AvatarKit → 使用 Token 连接 Motion Server
+- LLM 问题生成。
+- TTS 语音合成。
+- ASR 语音识别。
+- 题库评分。
+
+整体链路：
+
+```text
+User Answer -> ASR/Text -> LLM/Question Bank -> replyText
+replyText -> Volcano TTS -> 16k mono PCM16 -> AvatarKit controller.send -> Digital Human Lip-sync
 ```
 
-## 4. Architecture Integration
+## Current Status
 
-```
-interviewer replyText → /api/tts (Volcano) → PCM16 16kHz mono
-                                              ↓
-                              controller.send(pcm, true)
-                                              ↓
-                              Spatius AvatarKit 口型同步
-```
+已完成：
 
-Spatius 仅消费最终语音层，不介入面试逻辑。
+- Backend Session Token endpoint。
+- Session Token direct 成功。
+- AvatarKit Web SDK 已接入。
+- Connect Avatar 可加载真实 Avatar。
+- Avatar render ready。
+- 官方 sample PCM 可验证 SDK。
+- Volcano TTS PCM 可送入 AvatarKit。
+- Start Interview / Submit Answer 的面试官回复可驱动数字人口型。
+- Avatar placeholder fallback 保留。
 
-## 5. Credential Security
+## Credentials
 
-- `SPATIUS_API_KEY` → `server/.env` only
-- `VITE_SPATIUS_APP_ID` / `VITE_SPATIUS_AVATAR_ID` → `client/.env`
-- Session Token → 后端动态生成，短期有效
-- `.env` → `.gitignore` 排除
+Backend-only:
 
-## 6. State Mapping
-
-```
-token_loading        → 请求 Session Token
-sdk_loading          → 初始化 AvatarKit
-avatar_loading       → 加载 Avatar 资源
-render_ready         → onFirstRendering 触发
-avatar_connected     → Motion Server 已连接
-avatar_speech_sending → TTS PCM 正在发送
-avatar_speaking      → 口型同步进行中
-avatar_speech_finished → 说话结束，进入 listening
-placeholder          → Fallback 占位符
+```bash
+SPATIUS_API_KEY=
+SPATIUS_APP_ID=
+SPATIUS_REGION=us-west
+SPATIUS_TOKEN_EXPIRE_MINUTES=30
 ```
 
-## 7. Known Warnings
+Frontend public config:
 
-- **AvatarKit WASM file not found**: Vite build 时报告的 packaging/path warning，最终输出仍含 WASM chunk，不影响功能
-- **Chunk size > 500kB**: AvatarKit WASM (~1.3MB) 导致的既有 warning
-- `npm run build` 通过
-
-## 8. Fallback
-
+```bash
+VITE_SPATIUS_APP_ID=
+VITE_SPATIUS_AVATAR_ID=
 ```
-无 API Key      → Token Fallback
-无 Avatar ID    → Placeholder
-SDK 初始化失败   → Placeholder
-Token 过期      → Placeholder, interview still works
+
+更换数字人形象：
+
+1. 在 Spatius 角色库复制新的 avatar-id。
+2. 修改 `client/.env` 中的 `VITE_SPATIUS_AVATAR_ID`。
+3. 重启 `npm run dev`。
+
+不要把真实 Avatar ID 写进 README 或 docs。
+
+## Session Token API
+
+`GET /api/spatius/session-token`
+
+成功：
+
+```json
+{
+  "sessionToken": "...",
+  "expireAt": 1710000000,
+  "mode": "direct",
+  "fallback": false
+}
 ```
+
+Fallback：
+
+```json
+{
+  "sessionToken": null,
+  "expireAt": null,
+  "mode": "fallback",
+  "fallback": true,
+  "message": "SPATIUS_API_KEY is not configured. AvaCoach is running in fallback demo mode."
+}
+```
+
+安全要求：
+
+- 不返回 `SPATIUS_API_KEY`。
+- 不打印完整 sessionToken。
+- 不把 Authorization / X-Api-Key header 暴露给前端。
+
+## AvatarKit Runtime Notes
+
+- AvatarStage 应稳定 mounted。
+- 普通 Start Interview / Submit Answer 不应 destroy Avatar runtime。
+- Reset Demo 或真正 unmount 才允许清理 runtime。
+- 重复 Connect Avatar 应幂等：已 connected 时复用 runtime。
+- Send Sample Audio 只在 render ready / connected 后启用。
+
+## Sample PCM Audio Lip-sync Debugging
+
+- 官方 sample PCM 只用于 SDK 验证。
+- 只有 AvatarKit `controller.send()` 的音频会驱动嘴型。
+- Browser SpeechSynthesis / 普通 audio 播放不会驱动 Spatius motion。
+- PCM 格式、sample rate、chunk send、connection state 都会影响 lip-sync。
+- 当前最终产品链路使用 Volcano TTS 的 16kHz / mono / PCM16 输出。
+
+## Fallback Strategy
+
+- Token 失败 -> fallback demo still usable。
+- SDK 初始化失败 -> placeholder mode。
+- Avatar render 失败 -> text interview remains usable。
+- Motion server disconnected -> Avatar speech fallback，不销毁整体面试流程。
+
+## Known Warnings
+
+- AvatarKit WASM / chunk size warning 是已知非阻塞 warning。
+- 当前 build passes。

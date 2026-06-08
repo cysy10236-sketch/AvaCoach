@@ -39,13 +39,31 @@ const startSchema = {
 const nextSchema = {
   type: "object",
   additionalProperties: false,
-  required: ["replyText", "score", "feedback", "suggestion", "shouldEnd"],
+  required: [
+    "feedbackText",
+    "nextQuestion",
+    "replyText",
+    "score",
+    "feedback",
+    "suggestion",
+    "shouldEnd",
+    "coveredPoints",
+    "missingPoints",
+    "improvementTips",
+    "scoringReason",
+  ],
   properties: {
+    feedbackText: { type: "string" },
+    nextQuestion: { type: "string" },
     replyText: { type: "string" },
-    score: { type: "number", minimum: 1, maximum: 10 },
+    score: { type: "number", minimum: 0, maximum: 100 },
     feedback: { type: "string" },
     suggestion: { type: "string" },
     shouldEnd: { type: "boolean" },
+    coveredPoints: { type: "array", items: { type: "string" } },
+    missingPoints: { type: "array", items: { type: "string" } },
+    improvementTips: { type: "array", items: { type: "string" } },
+    scoringReason: { type: "string" },
   },
 };
 
@@ -90,12 +108,21 @@ export const openaiProvider: LlmProvider = {
       nextSchema,
     );
 
+    const feedbackText = data.feedbackText || data.feedback || "这轮回答已经记录。";
+    const nextQuestion = data.nextQuestion || "";
+
     return {
-      replyText: data.replyText,
-      score: clamp(Math.round(Number(data.score)), 1, 10),
-      feedback: data.feedback,
+      feedbackText,
+      nextQuestion,
+      replyText: data.replyText || [feedbackText, nextQuestion].filter(Boolean).join(" "),
+      score: normalizeScore(Number(data.score)),
+      feedback: data.feedback || feedbackText,
       suggestion: data.suggestion,
       shouldEnd: Boolean(data.shouldEnd),
+      coveredPoints: asStringArray(data.coveredPoints),
+      missingPoints: asStringArray(data.missingPoints),
+      improvementTips: asStringArray(data.improvementTips),
+      scoringReason: data.scoringReason,
       source: "llm",
       provider: "openai",
     };
@@ -186,4 +213,14 @@ function clamp(value: number, min: number, max: number): number {
   }
 
   return Math.min(max, Math.max(min, value));
+}
+
+function normalizeScore(value: number): number {
+  const rounded = Math.round(value);
+
+  if (!Number.isFinite(rounded)) {
+    return 60;
+  }
+
+  return rounded <= 10 ? clamp(rounded * 10, 0, 100) : clamp(rounded, 0, 100);
 }

@@ -1,72 +1,93 @@
-# AvaCoach Demo Script (2–3 分钟)
+# AvaCoach Demo Script
 
-## Demo Order
-
-1. **开场** — 介绍 AvaCoach 是一个 AI 数字人模拟面试训练系统，不是普通 chatbot
-2. **展示 UI 布局** — 三栏 SaaS 工作台：左侧配置，中间数字人 + 对话，右侧反馈
-3. **Connect Avatar** — 点击后等待状态变为 "Avatar 已连接"
-4. **选择配置** — 岗位（如 Frontend Engineer）、题目来源（IT Question Bank）、难度（Medium）、Topic（如 React）
-5. **Start Interview** — 数字人面试官用 TTS + 口型同步提问第一题
-6. **语音回答** — 等数字人说完后，点击"开始语音回答"，说 5 秒中文
-7. **ASR 识别** — 停止录音后，观察 transcript 实时显示在回答框中
-8. **Submit Answer** — 右侧展示本轮评分、反馈、coveredPoints / missingPoints / improvementTips
-9. **重复 1–2 轮** — 观察 LLM 追问和知识点覆盖追踪
-10. **End Interview** — 展示最终报告：综合评分、强项、薄弱项、知识点分析
-11. **Reset Demo** — 验证一键重置，状态完全清空
-
-## Live Startup
+## 现场启动
 
 ```bash
+npm install
 npm run dev
 ```
 
-- 前端: `http://localhost:5173`
-- 后端: `http://localhost:3001`
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:3001`
 
-## 关键讲解话术
+如果现场只出现 AvatarKit WASM / chunk size warning，可以说明这是已知非阻塞 warning，build 通过且 demo 可运行。
 
-### 讲解 Spatius AvatarKit
+## 2-4 分钟演示顺序
 
-> Spatius 是数字人渲染和驱动层。Connect Avatar 时会从后端获取短期 Session Token，初始化 AvatarKit，加载 Avatar，连接 Motion Server。如果任何步骤失败，placeholder 保持活跃，面试流程仍完全可用。
+1. 打开页面，介绍 AvaCoach 是中文 IT 数字人模拟面试训练系统。
+2. 说明 Spatius 是 avatar rendering / lip-sync layer，不是 LLM，也不是 TTS。
+3. 点击 Connect Avatar，等待 Avatar Connected。
+4. 点击 Send Sample Audio，说明这是官方 SDK 验证音频，用来证明 AvatarKit `controller.send()` 能驱动口型。
+5. 选择 IT 题库 / Frontend / React / 中等。
+6. 点击 Start Interview。
+7. 展示数字人用中文提问和口型同步。
+8. 说明当前面试官回复来自 LLM 或题库逻辑，语音来自 Volcano TTS，口型由 Spatius AvatarKit 驱动。
+9. 点击开始语音回答，说一段中文回答。
+10. 展示 Volcano Streaming ASR partial / final transcript 实时回填到回答框。
+11. 手动编辑回答，说明系统不会自动提交，候选人始终有确认权。
+12. 点击 Submit Answer。
+13. 展示右侧 score、coveredPoints、missingPoints、improvementTips、scoringReason。
+14. 第二轮可以演示：“我不会，可以换一道吗？”
+15. Ava 会温和换一个相关问题或降低角度，不会强行结束。
+16. 也可以演示候选人问薪资/福利，Ava 会简短回应并拉回技术面试。
+17. 完成三轮后，系统提示生成最终报告。
+18. 点击 End Interview，展示 Final Report。
+19. 说明 ended 后不会继续生成新问题，只能查看报告或 Reset Demo。
+20. 点击 Reset Demo，展示状态清空。
 
-### 讲解 Volcano TTS
+## 面试官讲解话术
 
-> TTS 层是 provider-based 架构。当前使用火山引擎 V3 HTTP Chunked TTS，输出 16kHz mono PCM16 音频。这个音频会直接送入 AvatarKit `controller.send()` 驱动数字人口型同步。如果 TTS 不可用，自动降级到浏览器语音或静音文本模式。
+可以这样介绍：
 
-### 讲解 Volcano Streaming ASR
+> AvaCoach 不是一个简单聊天机器人，而是一个完整中文 IT 面试训练闭环。前端负责数字人、对话、ASR 录音和反馈展示；后端负责 LLM、TTS、ASR proxy、Spatius Session Token、题库评分和面试状态机。所有敏感 key 都只在后端。
 
-> 语音识别使用火山引擎流式 ASR。浏览器麦克风采集 PCM16 / 16kHz / mono 音频，通过 WebSocket 代理实时发送到火山 bigmodel_async 服务。partial transcript 会实时显示在回答框，停止录音后收到 final result。如果 ASR 不可用，降级到浏览器 SpeechRecognition 或手动输入。
+可以这样解释 Spatius：
 
-### 讲解 LLM Provider
+> Spatius 在这里负责数字人渲染和口型同步。LLM 负责生成问题和反馈，Volcano TTS 负责生成 16k PCM 音频，AvatarKit 接收 PCM 后驱动数字人的嘴型。
 
-> 面试逻辑使用 provider-based LLM 架构，支持 DeepSeek、OpenAI 和 Mock。每轮回答后生成追问、评分和建议。题库模式下还会把 expectedPoints 传给 LLM 做上下文对齐。LLM 失败时自动降级到 Mock。
+可以这样解释状态机：
 
-### 讲解 IT Question Bank
+> 最新一轮修复后，面试状态由后端 session 控制。三轮后后端会返回 ended、nextAllowed=false、reportReady=true。即使前端再次提交，后端也不会再生成下一题。
 
-> 题库包含 110 道中文 IT 面试题，每道题有 role、topic、difficulty、expectedPoints、followUps 和 tags。每轮回答后会对比期望要点，展示已覆盖和遗漏的知识点。题库是 demo seed data，后续可替换为企业题库或 JD 生成题目。
+可以这样解释评分：
 
-### 讲解 Fallback 设计
+> 题库模式不是只让模型主观打分。每道题都有 expectedPoints，系统会判断回答覆盖了哪些点、缺了哪些点，再用 scoringReason 解释分数来源。
 
-> 每一层外部依赖都有独立的降级路径。不是容错逻辑，而是 Demo 稳定性设计。确保在任何配置下都能完整演示面试流程。
+## 推荐演示回答
 
-## Likely Interviewer Questions
+Frontend / React / medium:
 
-**Q: 为什么 API Key 不放前端？**
+> 我在一个后台系统里做过 React 性能优化。当时列表页有大量筛选条件和表格渲染，首屏和交互都有卡顿。我先用 React Profiler 和浏览器 Performance 定位重渲染来源，然后把表格行组件拆分，用 memo 控制重复渲染，把筛选计算放到 useMemo，并对接口结果做分页和缓存。上线后首屏耗时大概降低了 30%，用户操作卡顿明显减少。
 
-A: 前端环境变量会打包进浏览器。AvaCoach 把所有 API Key 放在 Express 后端，前端只接收短期 Session Token 和公开 ID。
+换题演示：
 
-**Q: 为什么花精力做 fallback？**
+> 这个点我不太熟，可以换一道相关但更基础的题吗？
 
-A: Fallback 保护 Demo 不受 provider 配置、网络、配额、SDK 初始化等问题影响。同时证明产品架构是松耦合的，每一层都可以独立替换。
+薪资/流程演示：
 
-**Q: Spatius 在这个系统里负责什么？**
+> 这个岗位薪资和福利怎么样？
 
-A: Spatius 负责数字人渲染和口型同步驱动。它不生成问题、不合成为语音、不做面试逻辑。LLM + TTS + ASR + 题库都在 AvaCoach 后端。
+## 重点展示点
 
-**Q: 火山 TTS 音频怎么驱动口型的？**
+- 真实 Avatar 可连接。
+- 官方 sample PCM 可验证 SDK。
+- Volcano TTS 可驱动 Avatar lip-sync。
+- Volcano Streaming ASR 可实时回填回答。
+- Submit Answer 后只生成一个自然追问。
+- ended 后不会继续追问。
+- 评分是 0-100，并有 expectedPoints 解释。
+- fallback 保证 demo 稳定。
 
-A: 后端调用火山 TTS 获取 16kHz mono PCM16 音频，前端拿到后通过 AvatarKit `controller.send(pcm, true)` 发送。Spatius AvatarKit 从 PCM 音频生成口型动画。
+## Fallback 解释
 
-**Q: 流式 ASR 是怎么工作的？**
+如果现场某个外部服务不可用：
 
-A: 浏览器麦克风采集 PCM16 / 16kHz / mono → WebSocket 发送到后端 `/api/asr/stream` → 后端通过火山二进制协议转发到 bigmodel_async → 接收 partial/final transcript 返回前端 → 填入回答框。用户仍可编辑后再提交。
+- AvatarKit 不可用：使用 placeholder / text mode。
+- TTS 不可用：browser speech 或 silent text mode。
+- ASR 不可用：browser ASR 或手动输入。
+- LLM 不可用：mock provider。
+- Spatius token 不可用：fallback demo still usable。
+
+核心话术：
+
+> Fallback 是为了保证演示稳定性。即使某个外部 provider 失败，完整面试流程仍然可以展示。

@@ -1,117 +1,71 @@
-# ASR Plan — 状态：✅ Streaming ASR 已接入并通过测试
+# ASR Integration
 
-## Role In AvaCoach
+## Role in AvaCoach
 
-ASR 是候选人语音回答输入层。它将用户语音转为文本，填入回答框，用户仍可编辑后手动提交。
+ASR 是候选人语音回答输入层。它负责把候选人的语音回答转换成文字，填入回答框，再复用现有 Submit Answer 流程。ASR 不直接决定评分、不直接生成追问，也不影响 AvatarKit/TTS 链路。
 
-```
-浏览器麦克风 (PCM16 / 16kHz / mono)
-→ WebSocket → 后端 /api/asr/stream
-→ 火山 bigmodel_async (自定义二进制协议)
-→ partial transcript (实时显示)
-→ final transcript (停止后确认)
-→ 填入 answer textarea
-→ 用户编辑 → Submit Answer
-```
+## Current Status
 
-## Current Implementation: Volcano Streaming ASR ✅
+已完成：
 
-### 架构
+- Browser microphone capture。
+- PCM16 / 16kHz / mono audio path。
+- Backend WebSocket ASR proxy。
+- Volcano Streaming ASR integration。
+- partial transcript 实时显示。
+- final transcript 回填回答框。
+- 用户可手动编辑识别文本。
+- Submit Answer 仍由用户确认触发。
+- Browser ASR / manual input fallback。
+- 安全 debug，不输出 API Key 或完整音频。
 
-- **前端**: `audioRecorder.ts` (ScriptProcessorNode PCM16 采集) → `streamingAsrClient.ts` (WebSocket 发送)
-- **代理**: Vite dev proxy `ws: true` → 或直连 `ws://localhost:3001/api/asr/stream`
-- **后端**: `asrStream.ts` (WebSocket Server, 诊断日志) → `volcanoStreamingAsrClient.ts` (二进制协议)
-- **协议**: 火山自定义 binary protocol v1 (4B header + gzipped JSON payload)
-- **模型**: bigmodel_async (流式 partial + final)
+## Runtime Flow
 
-### 音频格式
-
-```
-格式: PCM16
-采样率: 16000 Hz
-声道: mono
-字节序: little-endian
-采集间隔: ~256ms (ScriptProcessorNode bufferSize=4096)
-```
-
-### 前端诊断 (dev only)
-
-开发模式下 (`import.meta.env.DEV`)，录音结束后自动输出：
-- `pcmChunkCount` / `pcmBytesTotal`
-- `estimatedDurationSec` / `rmsLevel` / `peakLevel` / `silenceRatio`
-- `first10SampleValues`
-- 可调用 `downloadLastAsrPcm()` 下载 WAV 文件做离线对比
-
-### 后端诊断 (ASR_STREAM_DEBUG=true)
-
-```
-connectId, frontAudioChunkCount, frontAudioBytesTotal,
-firstChunkBytes, lastChunkBytes, receivedStop,
-volcanoWsReady, volcanoAudioChunkCount,
-partialCount, finalReceived, finalTranscriptLength, fallbackReason
+```mermaid
+flowchart LR
+  MIC["Browser Microphone"] --> REC["Audio Recorder<br/>PCM16 16k mono"]
+  REC --> WS["Frontend WebSocket Client"]
+  WS --> API["Backend ASR Proxy"]
+  API --> VASR["Volcano Streaming ASR"]
+  VASR --> API
+  API --> WS
+  WS --> UI["Partial / Final Transcript"]
+  UI --> TXT["Answer Textarea"]
+  TXT --> SUBMIT["Submit Answer"]
 ```
 
-绝不输出：API Key、完整音频、完整 transcript、raw hex。
+## UX Rules
 
-### 测试脚本
-
-```bash
-node scripts/test-asr-stream.mjs                    # 440Hz sine wave
-node scripts/test-asr-stream.mjs ./test-speech.wav  # 真实 WAV 文件
-```
-
-### 测试结果 (15s 中文语音 WAV)
-
-| Metric | Value |
-|--------|-------|
-| Audio chunks sent | 375 |
-| Partial transcripts | 23 |
-| Final transcript | ✅ 完整中文识别 |
-| Ready event | ✅ |
-| Final event | ✅ |
-| WebSocket close | ✅ clean |
-
-## Provider Modes
-
-```bash
-ASR_PROVIDER=volcano_stream  # 火山流式 ASR（当前默认推荐）
-ASR_PROVIDER=browser         # 浏览器 SpeechRecognition
-ASR_PROVIDER=mock            # 后端 mock fallback
-```
-
-## Environment Variables
-
-```bash
-ASR_PROVIDER=volcano_stream
-VOLCANO_ASR_ENABLED=true
-VOLCANO_ASR_API_KEY=
-VOLCANO_ASR_RESOURCE_ID=volc.seedasr.sauc.duration
-VOLCANO_ASR_ENDPOINT=wss://openspeech.bytedance.com/api/v3/sauc/bigmodel_async
-VOLCANO_ASR_LANGUAGE=zh-CN
-VOLCANO_ASR_AUDIO_FORMAT=pcm
-VOLCANO_ASR_SAMPLE_RATE=16000
-VOLCANO_ASR_BITS=16
-VOLCANO_ASR_CHANNEL=1
-ASR_STREAM_DEBUG=false
-```
-
-ASR 凭证仅在 `server/.env`，绝不暴露到前端。
+- 点击“开始语音回答”后请求麦克风权限。
+- 点击“停止录音”后等待 final transcript。
+- transcript 自动填入回答框。
+- 用户仍可手动修改。
+- 不自动提交。
+- 数字人正在说话时建议禁用录音，避免收音干扰。
+- 识别失败时保留文字输入。
 
 ## Fallback Strategy
 
-```
-没有麦克风权限      → 浏览器 SpeechRecognition 或手动输入
-WebSocket 未连接    → 自动 fallback 到 browser ASR
-火山 ASR 不可用     → fallback JSON → browser ASR
-Final 为空          → 保留最后一个 partial 作为结果
-超时无 Final        → 15s 超时保护，自动 fallback
-Partial 有内容      → 不会被 browser ASR fallback 覆盖
-```
+- Volcano Streaming ASR 失败 -> Browser SpeechRecognition。
+- Browser SpeechRecognition 不支持 -> Manual input。
+- 麦克风权限被拒绝 -> Manual input。
+- 没有检测到语音 -> Manual input 或重新录音。
 
-## Protocol Notes
+Fallback 不影响现有 LLM、TTS、AvatarKit 或题库链路。
 
-火山 bigmodel_async 协议要点：
-- 流式响应 (`flags & 0b0001`): `[4B header][4B seq][4B size][payload]`
-- 标准响应 (`flags=0`): `[4B header][4B size][payload]`
-- 空 final result: 火山返回 `0x00` + `FLAG_FINAL` → 视为合法空 final
-- Gzip 压缩/解压: client request payload 和 server response payload 均使用 gzip
+## Security Notes
+
+- `VOLCANO_ASR_API_KEY` 只放在 `server/.env`。
+- 前端不读取、不打印、不提交真实 key。
+- 不把用户录音保存到仓库。
+- Debug 只记录 attemptId、audioBytes、状态码、错误摘要等安全字段。
+
+## Demo Talking Point
+
+> 候选人可以用语音回答，但系统不会自动提交。ASR transcript 只是增强输入方式，最终仍由用户确认后 Submit Answer，保证面试流程可控。
+
+## Current Limitations
+
+- 当前是 demo/prototype，没有录音历史管理。
+- 没有生产级隐私审计和数据留存策略。
+- 火山 ASR provider 参数后续可根据正式账号配置继续细化。

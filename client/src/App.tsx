@@ -52,6 +52,7 @@ import type {
 } from './types/spatius'
 
 type AsrMode = 'stream' | 'browser' | 'mock' | 'unavailable'
+const DEFAULT_SESSION_ID = 'default-demo-session'
 
 function App() {
   const [role, setRole] = useState<InterviewRole>('frontend')
@@ -86,7 +87,8 @@ function App() {
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [asrError, setAsrError] = useState<string | null>(null)
-  const [interviewStatus, setInterviewStatus] = useState<InterviewFlowStatus>('in_progress')
+  const [interviewStatus, setInterviewStatus] = useState<InterviewFlowStatus>('idle')
+  const [sessionId, setSessionId] = useState(DEFAULT_SESSION_ID)
 
   const activeActionRef = useRef<'start' | 'submit' | 'end' | null>(null)
   const speechRunRef = useRef(0)
@@ -331,7 +333,9 @@ function App() {
         questionSource,
         difficulty,
         topic: topic || undefined,
+        sessionId,
       })
+      setSessionId(response.sessionId ?? sessionId)
       setResponseSource(response.source ?? 'mock')
       setLlmProvider(response.provider ?? 'mock')
       setActiveQuestionMeta(response.questionMeta ?? null)
@@ -386,6 +390,7 @@ function App() {
         nextHistory,
         activeQuestionMeta,
         interviewStatus,
+        sessionId,
       )
       if (response.status === 'ended' && !response.replyText) {
         setInterviewStatus('ended')
@@ -399,11 +404,13 @@ function App() {
         feedback: response.feedback,
         suggestion: response.suggestion,
         knowledgeFeedback: response.knowledgeFeedback,
+        scoringReason: response.scoringReason,
       })
       setResponseSource(response.source ?? 'mock')
       setLlmProvider(response.provider ?? 'mock')
-      setShouldEnd(response.shouldEnd)
+      setShouldEnd(response.shouldEnd || response.reportReady === true || response.nextAllowed === false)
       setInterviewStatus(response.status ?? (response.shouldEnd ? 'ended' : 'in_progress'))
+      setSessionId(response.sessionId ?? sessionId)
       if (activeQuestionMeta) {
         setAnsweredQuestionMetas((current) => [...current, activeQuestionMeta])
       }
@@ -426,7 +433,7 @@ function App() {
   }
 
   async function handleEnd() {
-    if (activeActionRef.current || interviewStatus === 'ended') {
+    if (activeActionRef.current || (interviewStatus === 'ended' && report)) {
       return
     }
     activeActionRef.current = 'end'
@@ -440,7 +447,8 @@ function App() {
     setVoiceNotice('正在生成最终报告...')
 
     try {
-      const response = await createInterviewReport(role, messages, answeredQuestionMetas)
+      const response = await createInterviewReport(role, messages, answeredQuestionMetas, sessionId)
+      setSessionId(response.sessionId ?? sessionId)
       setResponseSource(response.source ?? 'mock')
       setLlmProvider(response.provider ?? 'mock')
       setReport(response)
@@ -475,7 +483,8 @@ function App() {
     setFeedback(null)
     setReport(null)
     setShouldEnd(false)
-    setInterviewStatus('in_progress')
+    setInterviewStatus('idle')
+    setSessionId(DEFAULT_SESSION_ID)
     setError(null)
     setResponseSource('mock')
     setLlmProvider('mock')
@@ -740,6 +749,7 @@ function App() {
       <SystemNotice
         asrError={asrError}
         asrMode={asrMode}
+        interviewStatus={interviewStatus}
         interviewError={error}
         isRecording={isRecording}
         isTranscribing={isTranscribing}
@@ -753,7 +763,7 @@ function App() {
           asrError={asrError}
           asrMode={asrMode}
           asrSupported={asrSupported}
-          canEnd={shouldEnd}
+          canEnd={shouldEnd && !report}
           difficulty={difficulty}
           disableVoiceInput={disableVoiceInput}
           error={null}
@@ -793,7 +803,7 @@ function App() {
           <InterviewPanel messages={messages} stage={stage} />
         </section>
         <FeedbackPanel
-          canEnd={shouldEnd}
+          canEnd={shouldEnd && !report}
           currentFeedback={feedback}
           report={report}
           round={round}

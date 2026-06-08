@@ -41,6 +41,7 @@ export function nextInterview(
   history: Message[],
   questionMeta?: QuestionMeta | null,
   status?: InterviewFlowStatus,
+  sessionId?: string,
 ) {
   return postJson<NextInterviewResponse>('/api/interview/next', {
     role,
@@ -48,6 +49,7 @@ export function nextInterview(
     history,
     questionMeta,
     status,
+    sessionId,
   })
 }
 
@@ -55,10 +57,12 @@ export function createInterviewReport(
   role: InterviewRole,
   history: Message[],
   questionMetas?: QuestionMeta[],
+  sessionId?: string,
 ) {
   return postJson<Report>('/api/interview/report', {
     role,
     history,
     questionMetas,
+    sessionId,
   })
 }

@@ -19,7 +19,7 @@ export type InterviewStage =
 export type AvatarStatus = 'idle' | 'speaking' | 'listening' | 'evaluating'
 export type ResponseSource = 'llm' | 'mock' | 'bank'
 export type LlmProvider = 'openai' | 'deepseek' | 'mock'
-export type InterviewFlowStatus = 'in_progress' | 'ended'
+export type InterviewFlowStatus = 'idle' | 'in_progress' | 'ended'
 
 export interface Message {
   id: string
@@ -33,6 +33,7 @@ export interface Feedback {
   feedback: string
   suggestion: string
   knowledgeFeedback?: KnowledgeFeedback
+  scoringReason?: string
 }
 
 export interface QuestionMeta {
@@ -66,6 +67,7 @@ export interface Report {
   source?: ResponseSource
   provider?: LlmProvider
   bankReport?: BankReportSummary
+  sessionId?: string
   status?: InterviewFlowStatus
   nextAllowed?: boolean
   reportReady?: boolean
@@ -78,6 +80,7 @@ export interface StartInterviewResponse {
   source?: ResponseSource
   provider?: LlmProvider
   questionMeta?: QuestionMeta
+  sessionId?: string
   status?: InterviewFlowStatus
   nextAllowed?: boolean
   reportReady?: boolean
@@ -90,6 +93,12 @@ export interface NextInterviewResponse extends Feedback {
   provider?: LlmProvider
   questionMeta?: QuestionMeta
   knowledgeFeedback?: KnowledgeFeedback
+  feedbackText?: string
+  nextQuestion?: string
+  coveredPoints?: string[]
+  missingPoints?: string[]
+  improvementTips?: string[]
+  sessionId?: string
   status?: InterviewFlowStatus
   nextAllowed?: boolean
   reportReady?: boolean
@@ -100,4 +109,5 @@ export interface StartInterviewOptions {
   questionSource: QuestionSource
   difficulty?: QuestionDifficulty
   topic?: string
+  sessionId?: string
 }

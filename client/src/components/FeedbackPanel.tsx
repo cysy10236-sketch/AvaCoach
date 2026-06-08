@@ -23,10 +23,10 @@ function FeedbackPanel({
     <aside className="panel feedback-panel" aria-label="反馈与报告">
       <div className="panel-heading compact">
         <div className="section-title">
-          <span className="section-icon">▤</span>
+          <span className="section-icon">◆</span>
           <h2>反馈与报告</h2>
         </div>
-        <span className="stage-pill">{canEnd ? '可结束' : `第 ${round}/3 轮`}</span>
+        <span className="stage-pill">{canEnd ? '可生成报告' : `第 ${round}/3 轮`}</span>
       </div>
 
       <div className="feedback-scroll">
@@ -39,6 +39,9 @@ function FeedbackPanel({
           <div className="score-copy">
             <h3>综合评价</h3>
             <p>{currentFeedback?.feedback ?? '提交回答后，Ava 会给出本轮综合评价、覆盖要点和改进建议。'}</p>
+            {currentFeedback?.scoringReason ? (
+              <p className="muted-copy">{currentFeedback.scoringReason}</p>
+            ) : null}
           </div>
         </section>
 

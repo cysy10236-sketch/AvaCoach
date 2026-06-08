@@ -1,107 +1,164 @@
 # Provider Architecture
 
-## Why Provider-Based
+AvaCoach 使用 provider-based 架构，把 LLM、TTS、ASR、Spatius 和题库评分拆成清晰边界。这样既方便面试演示，也方便后续替换供应商或扩展生产能力。
 
-AvaCoach 将 LLM、TTS、ASR 三层都设计为 provider-based 架构，使得每一层可以独立切换供应商而不影响其他层和前端 UI。
+## High-level Flow
 
-好处：
-- 不同 Demo 场景可使用不同 API Key
-- 成本、速度、质量可按需调整
-- Provider 宕机不影响面试流程（自动 fallback）
-- 同一业务逻辑适配多个供应商
+```mermaid
+flowchart TD
+  FE["React Frontend"] --> API["Express Backend"]
+  API --> LLM["LLM Provider"]
+  API --> QB["Question Bank Service"]
+  API --> TTS["TTS Provider"]
+  API --> SPT["Spatius Token Service"]
+  FE --> ASRWS["ASR WebSocket Proxy"]
+  ASRWS --> VASR["Volcano Streaming ASR"]
+  TTS --> FE
+  FE --> AV["Spatius AvatarKit"]
+```
 
 ## LLM Provider
 
-```
-LLM_PROVIDER=openai | deepseek | mock
-```
+Responsibility:
 
-每个 provider 实现相同接口：
-- `generateOpeningAndFirstQuestion(role)` — 开场 + 第一题
-- `generateFollowUp(role, answer, history, context?)` — 追问 + 评分
-- `generateFinalReport(role, history)` — 最终报告
+- 生成开场和第一题。
+- 根据候选人回答生成反馈和一个自然追问。
+- 生成最终报告。
+- 遇到薪资/福利/流程类问题时，简短回应并拉回技术面试。
+- 候选人说不会或要求换题时，温和降难度或换相关问题。
 
-所有 provider 返回统一的 JSON 契约，前端不关心后端使用了哪个 LLM。
+Providers:
 
-| Provider | 模型 | 说明 |
-|----------|------|------|
-| OpenAI | `gpt-4o-mini` | 通用高质量 |
-| DeepSeek | `deepseek-v4-flash` / `deepseek-v4-pro` | 推荐，快速低成本 |
-| Mock | N/A | 无外部依赖，始终可用 |
+- DeepSeek
+- OpenAI
+- Mock
 
-Mock fallback 在 LLM 调用失败时自动启用。
+Fallback:
+
+- DeepSeek/OpenAI 失败时自动切换 Mock provider。
+- Mock provider 仍返回 0-100 score、feedback、suggestion 和状态字段。
 
 ## TTS Provider
 
-```
-TTS_PROVIDER=openai | volcano | mock
-```
+Responsibility:
 
-| Provider | 输出格式 | 说明 |
-|----------|---------|------|
-| Volcano | `audio/pcm; rate=16000; channels=1` | V3 HTTP Chunked，直接驱动 AvatarKit 口型 |
-| OpenAI | MP3 | 需前端解码 → resample → PCM16 |
-| Mock | N/A | 强制 Browser Speech / Silent Text fallback |
+- 将 interviewer replyText 转换成可播放音频。
+- 成功路径优先输出 AvatarKit 可用的 16kHz / mono / PCM16。
 
-**TTS → AvatarKit 链路**：
-1. 后端 `/api/tts` 获取音频
-2. Volcano 直接返回 16kHz mono PCM16 → 透传
-3. 其他格式 → 前端 decodeAudioData → mix to mono → resample 16kHz → PCM16
-4. `avatarView.controller.send(pcm, true)` → Spatius 生成口型动画
+Providers:
+
+- Volcano TTS V3 HTTP Chunked
+- OpenAI TTS
+- Mock / browser fallback
+
+Avatar integration:
+
+- Volcano TTS 返回 PCM16 时，前端直接送入 AvatarKit `controller.send()`。
+- 如果返回的是非 PCM 音频，前端可转换为 16k mono PCM16 后再发送。
+- Browser SpeechSynthesis 只做 fallback，不驱动 Avatar lip-sync。
+
+Fallback:
+
+- TTS 请求失败 -> browser speech。
+- Browser speech 不可用 -> silent text mode。
+- TTS 或 fallback 失败不影响文字面试流程。
 
 ## ASR Provider
 
-```
-ASR_PROVIDER=volcano_stream | browser | mock
-```
+Responsibility:
 
-| Provider | 架构 | 说明 |
-|----------|------|------|
-| **Volcano Streaming** | WebSocket Binary Proxy | 浏览器 PCM16 → WS `/api/asr/stream` → 火山 bigmodel_async |
-| Browser | `window.SpeechRecognition` | 纯前端，zh-CN |
-| Mock | 后端 fallback | 无外部依赖 |
+- 让候选人用语音回答。
+- 将 partial / final transcript 回填到 answer textarea。
+- 保留手动修改和手动提交权。
 
-**Streaming ASR 链路**：
-```
-浏览器麦克风 (PCM16/16kHz/mono)
-→ ScriptProcessorNode 采集
-→ WebSocket (ArrayBuffer 二进制)
-→ 后端 /api/asr/stream
-→ 火山 bigmodel_async (自定义二进制协议 + gzip)
-→ partial transcript (实时)
-→ final transcript (停止后)
-→ 前端回填 answer textarea
-```
+Providers:
 
-## 题库 Provider
+- Volcano Streaming ASR via backend WebSocket proxy。
+- Browser SpeechRecognition fallback。
+- Manual input fallback。
 
-AvaCoach 本地题库作为 demo seed data：
-- 110 道中文 IT 面试题
-- 覆盖 Frontend / Backend / AI / Behavioral
-- 每题含 role、topic、difficulty、expectedPoints、followUps、tags
+Streaming flow:
 
-题库模式下：
-1. 第一题来自题库
-2. LLM 生成追问时接收 expectedPoints 做上下文
-3. 后端做知识点覆盖检查（coveredPoints / missingPoints / improvementTips）
+1. 浏览器麦克风采集音频。
+2. 前端转换/发送 PCM16 / 16kHz / mono。
+3. 后端 ASR proxy 转发到 Volcano Streaming ASR。
+4. 后端返回 partial / final transcript。
+5. 前端将 transcript 写入回答框。
 
-## Fallback 策略
+Fallback:
 
-```
-LLM 失败       → mock provider (内置面试逻辑)
-TTS 失败       → Browser SpeechSynthesis → Silent Text
-ASR 失败       → Browser SpeechRecognition → Manual Input
-题库 mismatch  → same-role / behavioral fallback
-Token 失败     → placeholder avatar, interview still works
-Avatar 失败    → placeholder, interview still works
-```
+- Volcano ASR 失败 -> browser ASR。
+- Browser ASR 不支持或被拒绝 -> manual input。
 
-每一层的 fallback 是独立、自动的，不影响其他层。
+## Spatius Provider
 
-## Avatar Runtime 生命周期
+Responsibility:
 
-AvatarKit 是状态ful 的。当前前端将 runtime 保存在 ref 中。Start Interview、Submit Answer、语音模式切换、speech interruption 都不会销毁 runtime。仅真正的组件卸载或显式 Reset/Destroy 才清理。
+- 后端生成 Direct Mode Session Token。
+- 前端初始化 AvatarKit。
+- 加载真实 Avatar。
+- 接收 PCM16 音频并驱动 lip-sync。
 
-## 未来扩展
+Security:
 
-同一接口可支持：Claude、Gemini、Qwen、本地模型、企业私有模型端点。只需新增 provider adapter，保持 JSON 契约不变。
+- `SPATIUS_API_KEY` 只存在 `server/.env`。
+- 前端不接触 API Key。
+- 前端只使用 `VITE_SPATIUS_APP_ID`、`VITE_SPATIUS_AVATAR_ID` 和后端返回的短期 Session Token。
+
+Fallback:
+
+- Token 失败 -> fallback demo still usable。
+- SDK 初始化失败 -> placeholder mode。
+- Avatar disconnected -> text interview remains usable。
+
+## Question Bank Service
+
+Responsibility:
+
+- 管理中文 IT 结构化题库。
+- 根据 role / difficulty / topic 选择题目。
+- 提供 questionMeta：expectedPoints、followUps、tags。
+- 评估回答覆盖了哪些 expectedPoints。
+- 输出 coveredPoints、missingPoints、improvementTips。
+- 用覆盖率校准 0-100 score。
+
+Latest fix:
+
+- 题库模式不再机械拼接 LLM 回复和 bank followUp。
+- 每轮最多一个主问题。
+- 未结束时生成反馈 + 一个自然追问。
+- 结束时只生成收尾反馈和报告提示。
+
+## Interview State Machine
+
+Responsibility:
+
+- 后端维护轻量 session。
+- 统一派生 `status / nextAllowed / reportReady / shouldEnd`。
+- 防止 ended 后继续生成追问。
+
+States:
+
+- `idle`
+- `in_progress`
+- `ended`
+
+Rules:
+
+- Start Interview -> `in_progress`。
+- 每次 Submit Answer -> round + 1。
+- 达到最大轮次 -> `ended`、`nextAllowed=false`、`reportReady=true`。
+- End Interview/report -> `ended`。
+- ended 后 `/next` 返回 no-op，不再调用新的追问逻辑。
+
+## Fallback Provider Philosophy
+
+每层 provider 都可以失败，但核心 demo 不应崩溃：
+
+- LLM fallback 保证有问题和反馈。
+- TTS fallback 保证文字和基础语音仍可展示。
+- ASR fallback 保证手动输入仍可用。
+- Avatar fallback 保证面试流程仍可用。
+- Question bank fallback 保证能选择同 role 或 behavioral 题目。
+
+这使 AvaCoach 适合现场面试演示：即使某个外部服务不可用，也能完整展示产品闭环。

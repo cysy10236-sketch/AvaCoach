@@ -109,6 +109,42 @@ export function evaluateAnswerAgainstQuestion(
   };
 }
 
+export function calculateCoverageAdjustedScore({
+  answer,
+  knowledgeFeedback,
+  llmScore,
+  questionMeta,
+}: {
+  answer: string;
+  knowledgeFeedback: KnowledgeFeedback;
+  llmScore: number;
+  questionMeta: QuestionMeta;
+}): { score: number; scoringReason: string } {
+  const expectedCount = Math.max(1, questionMeta.expectedPoints.length);
+  const coverageRatio = knowledgeFeedback.coveredPoints.length / expectedCount;
+  const normalizedLlmScore = normalizeScoreToHundred(llmScore);
+  const answerLength = answer.trim().length;
+  const concreteBonus = hasConcreteEvidence(answer) ? 6 : 0;
+  const shortPenalty = answerLength < 40 ? 10 : answerLength < 80 ? 4 : 0;
+  const unknownCap = isUnknownAnswer(answer) ? 55 : 100;
+
+  const coverageScore =
+    coverageRatio >= 0.8 ? 88 :
+      coverageRatio >= 0.5 ? 76 :
+        coverageRatio >= 0.25 ? 62 :
+          45;
+  const rawScore = Math.round(
+    normalizedLlmScore * 0.45 + coverageScore * 0.55 + concreteBonus - shortPenalty,
+  );
+  const score = clamp(rawScore, 35, unknownCap);
+  const scoringReason = `题库覆盖度 ${knowledgeFeedback.coveredPoints.length}/${expectedCount}，LLM 基础分 ${normalizedLlmScore}，覆盖度校准分 ${coverageScore}${concreteBonus ? "，包含具体项目/数据加分" : ""}${shortPenalty ? "，回答偏短扣分" : ""}。`;
+
+  return {
+    score,
+    scoringReason,
+  };
+}
+
 export function createBankReportSummary(
   questionMetas: QuestionMeta[],
   feedbackItems: KnowledgeFeedback[],
@@ -228,6 +264,26 @@ function stableHash(value: string): number {
   return Array.from(value).reduce((hash, char) => {
     return (hash * 31 + char.charCodeAt(0)) >>> 0;
   }, 7);
+}
+
+function normalizeScoreToHundred(score: number): number {
+  if (!Number.isFinite(score)) {
+    return 60;
+  }
+
+  return clamp(score <= 10 ? score * 10 : score, 0, 100);
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function hasConcreteEvidence(answer: string): boolean {
+  return /(\d+%?|\d+\s*(ms|s|秒|分钟|人|次|万|千)|项目|上线|指标|结果|数据|复盘|STAR|背景|行动)/i.test(answer);
+}
+
+function isUnknownAnswer(answer: string): boolean {
+  return /^(不会|不太会|不知道|不清楚|没做过|不了解|不会。|不知道。|不清楚。)$/i.test(answer.trim());
 }
 
 export function isBankRole(role: InterviewRole): role is InterviewQuestion["role"] {

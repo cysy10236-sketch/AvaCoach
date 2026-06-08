@@ -38,12 +38,21 @@ export const deepseekProvider: LlmProvider = {
       buildNextPrompt(role, answer, history, context),
     );
 
+    const feedbackText = data.feedbackText || data.feedback || "这轮回答已经记录。";
+    const nextQuestion = data.nextQuestion || "";
+
     return {
-      replyText: data.replyText,
-      score: clamp(Math.round(Number(data.score)), 1, 10),
-      feedback: data.feedback,
+      feedbackText,
+      nextQuestion,
+      replyText: data.replyText || [feedbackText, nextQuestion].filter(Boolean).join(" "),
+      score: normalizeScore(Number(data.score)),
+      feedback: data.feedback || feedbackText,
       suggestion: data.suggestion,
       shouldEnd: Boolean(data.shouldEnd),
+      coveredPoints: asStringArray(data.coveredPoints),
+      missingPoints: asStringArray(data.missingPoints),
+      improvementTips: asStringArray(data.improvementTips),
+      scoringReason: data.scoringReason,
       source: "llm",
       provider: "deepseek",
     };
@@ -117,4 +126,14 @@ function clamp(value: number, min: number, max: number): number {
   }
 
   return Math.min(max, Math.max(min, value));
+}
+
+function normalizeScore(value: number): number {
+  const rounded = Math.round(value);
+
+  if (!Number.isFinite(rounded)) {
+    return 60;
+  }
+
+  return rounded <= 10 ? clamp(rounded * 10, 0, 100) : clamp(rounded, 0, 100);
 }

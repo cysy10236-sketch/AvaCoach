@@ -19,7 +19,7 @@ export type InterviewStage =
 export type Speaker = "interviewer" | "candidate";
 export type ResponseSource = "llm" | "mock" | "bank";
 export type LlmProvider = "openai" | "deepseek" | "mock";
-export type InterviewFlowStatus = "in_progress" | "ended";
+export type InterviewFlowStatus = "idle" | "in_progress" | "ended";
 
 export interface Message {
   id: string;
@@ -60,6 +60,7 @@ export interface StartInterviewRequest {
   questionSource?: QuestionSource;
   difficulty?: QuestionDifficulty;
   topic?: string;
+  sessionId?: string;
 }
 
 export interface StartInterviewResponse {
@@ -69,6 +70,7 @@ export interface StartInterviewResponse {
   source?: ResponseSource;
   provider?: LlmProvider;
   questionMeta?: QuestionMeta;
+  sessionId?: string;
   status?: InterviewFlowStatus;
   nextAllowed?: boolean;
   reportReady?: boolean;
@@ -80,6 +82,7 @@ export interface NextInterviewRequest {
   history: Message[];
   questionMeta?: QuestionMeta;
   status?: InterviewFlowStatus;
+  sessionId?: string;
 }
 
 export interface NextInterviewResponse {
@@ -92,6 +95,13 @@ export interface NextInterviewResponse {
   provider?: LlmProvider;
   questionMeta?: QuestionMeta;
   knowledgeFeedback?: KnowledgeFeedback;
+  feedbackText?: string;
+  nextQuestion?: string;
+  coveredPoints?: string[];
+  missingPoints?: string[];
+  improvementTips?: string[];
+  scoringReason?: string;
+  sessionId?: string;
   status?: InterviewFlowStatus;
   nextAllowed?: boolean;
   reportReady?: boolean;
@@ -102,6 +112,7 @@ export interface ReportInterviewRequest {
   role: InterviewRole;
   history: Message[];
   questionMetas?: QuestionMeta[];
+  sessionId?: string;
 }
 
 export interface ReportInterviewResponse {
@@ -112,6 +123,7 @@ export interface ReportInterviewResponse {
   source?: ResponseSource;
   provider?: LlmProvider;
   bankReport?: BankReportSummary;
+  sessionId?: string;
   status?: InterviewFlowStatus;
   nextAllowed?: boolean;
   reportReady?: boolean;

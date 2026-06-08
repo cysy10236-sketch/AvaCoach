@@ -1,99 +1,78 @@
-# TTS Integration Notes
+# TTS Integration
 
-## Role In AvaCoach
+## Role in AvaCoach
 
-TTS 将面试官文本转为语音。当前已接入 Volcano TTS V3 HTTP Chunked，输出 16kHz mono PCM16，直接驱动 Spatius AvatarKit 口型同步。
+TTS 负责把 interviewer replyText 转换成语音。成功路径下，TTS 音频会被送入 Spatius AvatarKit，让数字人真正“说出”面试官问题、追问和简短报告提示，并完成口型同步。
 
-## Current Chain
+## Current Status
 
-```
-interviewer replyText
-→ POST /api/tts
-→ Volcano V3 HTTP Chunked (或 OpenAI / Mock)
-→ PCM16 16kHz mono (Volcano 直接输出)
-→ AvatarKit controller.send(pcm, true)
-→ 数字人口型同步 + 语音播放
-```
+已完成：
 
-## Provider Modes
+- Volcano TTS V3 HTTP Chunked integration。
+- 解析 chunked JSON events。
+- 收集 `code=0` 的 base64 音频片段。
+- 正确识别 `code=20000000` 为成功结束事件。
+- 输出 `audio/pcm; rate=16000; channels=1; encoding=signed-integer; bits=16`。
+- 前端将 PCM16 送入 AvatarKit `controller.send()`。
+- Start Interview / Submit Answer 的面试官回复可驱动数字人口型。
+- End Interview 报告提示可走同一语音链路。
+- Browser Speech / Silent Text fallback 保留。
 
-```bash
-TTS_PROVIDER=volcano  # 火山 V3 HTTP Chunked（推荐中文面试官）
-TTS_PROVIDER=openai   # OpenAI TTS
-TTS_PROVIDER=mock     # 强制 Browser Speech / Silent Text fallback
-```
+## Runtime Flow
 
-### Volcano V3 HTTP Chunked
-
-- Endpoint: `https://openspeech.bytedance.com/api/v3/tts/unidirectional`
-- Auth: `X-Api-Key` + `X-Api-Resource-Id` + `X-Api-Request-Id`（仅后端）
-- Response: HTTP chunked JSON
-- `code=0` chunks: base64 音频数据
-- `code=20000000` + `message=ok`: 成功结束事件
-- 后端解码所有 base64 chunk → 拼接为一个 `audio/pcm` buffer
-- 输出: `audio/pcm; rate=16000; channels=1; encoding=signed-integer; bits=16`
-
-### OpenAI TTS
-
-- 模型: `gpt-4o-mini-tts`
-- 返回 MP3 等压缩格式
-- 前端需 decode → mix to mono → resample 16kHz → PCM16
-
-## Environment Variables
-
-```bash
-TTS_PROVIDER=volcano
-TTS_MODEL=gpt-4o-mini-tts
-TTS_VOICE=alloy
-
-# Volcano TTS
-VOLCANO_TTS_ENABLED=true
-VOLCANO_TTS_PROVIDER=volcano_bidirection
-VOLCANO_TTS_API_KEY=
-VOLCANO_TTS_RESOURCE_ID=seed-tts-2.0
-VOLCANO_TTS_VOICE_TYPE=zh_female_vv_uranus_bigtts
-VOLCANO_TTS_FORMAT=pcm
-VOLCANO_TTS_SAMPLE_RATE=16000
-VOLCANO_TTS_SPEECH_RATE=0
-VOLCANO_TTS_DISABLE_MARKDOWN_FILTER=true
-VOLCANO_TTS_ENABLE_LANGUAGE_DETECTOR=false
-VOLCANO_ACCESS_KEY_ID=
-VOLCANO_SECRET_ACCESS_KEY=
-VOLCANO_APP_ID=
-VOLCANO_TTS_ENDPOINT=https://openspeech.bytedance.com/api/v3/tts/unidirectional
+```mermaid
+flowchart LR
+  TEXT["interviewer replyText"] --> API["POST /api/tts"]
+  API --> VTTS["Volcano TTS V3<br/>HTTP Chunked"]
+  VTTS --> PCM["16kHz mono PCM16"]
+  PCM --> FE["Frontend Speech Player"]
+  FE --> AV["AvatarKit controller.send"]
+  AV --> FACE["Digital Human Lip-sync"]
 ```
 
-## AvatarKit Lip-Sync Path
+## Important Rule
 
-```
-Backend TTS → 16kHz mono PCM16 (Volcano) 或 压缩格式 (OpenAI)
-              ↓
-         压缩格式 → AudioContext.decodeAudioData
-              → mix to mono
-              → OfflineAudioContext resample 16kHz
-              → Float32 → PCM16 LE ArrayBuffer
-              ↓
-         controller.send(pcm, true)
-              ↓
-         Spatius AvatarKit 口型动画
-```
+只有通过 AvatarKit `controller.send()` 发送的 PCM 音频才会驱动数字人口型。Browser SpeechSynthesis 或普通 audio 播放不能驱动 Spatius motion。
 
-Volcano TTS 输出已匹配 AvatarKit 所需格式，可直接透传为 ArrayBuffer。
+## Double-voice Fix
 
-**重要**：只有通过 `controller.send()` 发送的 PCM 才能驱动口型。Browser SpeechSynthesis 和 `<audio>` 播放不会驱动 Avatar 嘴型。
+已修复双声音问题：
+
+- 如果 AvatarKit `controller.send()` 成功，不再因为短时间未观察到 `conversationState=playing` 就触发 Browser Speech fallback。
+- send 成功但未观察到 playing 时，状态可记录为 unconfirmed，但不会再播放第二路 browser speech。
+- Browser Speech fallback 只在 TTS JSON fallback、TTS 请求失败、AvatarKit 未连接超时或 `controller.send()` 明确抛错时触发。
+- 新一段语音前会 abort / cancel 上一段 fallback speech，避免 SpeechSynthesis 队列残留。
 
 ## Fallback Strategy
 
-```
-Volcano TTS 成功 → PCM16 → AvatarKit lip-sync ✅
-TTS 失败         → Browser SpeechSynthesis → 不驱动口型
-Browser 不支持   → Silent Text Mode → 纯文本面试
+- Volcano TTS 成功 -> Avatar TTS Lip-Sync。
+- TTS 返回 JSON fallback -> Browser Speech fallback。
+- Browser Speech 不可用 -> Silent Text Mode。
+- AvatarKit 未连接或 send 失败 -> Browser Speech fallback。
+- 所有 fallback 都不影响文字面试流程。
+
+## Environment Variables
+
+只放在 `server/.env`：
+
+```bash
+TTS_PROVIDER=volcano
+VOLCANO_TTS_ENABLED=true
+VOLCANO_TTS_API_KEY=
+VOLCANO_TTS_RESOURCE_ID=
+VOLCANO_TTS_VOICE_TYPE=
+VOLCANO_TTS_FORMAT=pcm
+VOLCANO_TTS_SAMPLE_RATE=16000
 ```
 
-## Current Limits
+不要把真实 key 写进前端、README 或 docs。
 
-- 无音频缓存
-- 无流式 TTS
-- 无 viseme 数据
-- 无用户语音选择 UI
-- TTS 到 AvatarKit 是非流式（一次性发送整个 PCM buffer）
+## Demo Talking Point
+
+> LLM 负责生成面试官文本，Volcano TTS 负责生成 16k PCM 语音，Spatius AvatarKit 负责把 PCM 音频驱动成数字人口型。这三层职责是分开的。
+
+## Current Limitations
+
+- 当前仍是 demo/prototype。
+- TTS provider 可继续扩展到更多声音、情绪和流式播放。
+- 生产环境需要更完整的音频缓存、错误监控和用量控制。

@@ -1,4 +1,5 @@
 import type { VoiceMode } from '../services/speechPlayer'
+import type { InterviewFlowStatus } from '../types/interview'
 import type { SpatiusRuntimeStatus } from '../types/spatius'
 
 type AsrMode = 'stream' | 'browser' | 'mock' | 'unavailable'
@@ -6,6 +7,7 @@ type AsrMode = 'stream' | 'browser' | 'mock' | 'unavailable'
 interface SystemNoticeProps {
   asrError: string | null
   asrMode: AsrMode
+  interviewStatus: InterviewFlowStatus
   interviewError: string | null
   isRecording: boolean
   isTranscribing: boolean
@@ -17,6 +19,7 @@ interface SystemNoticeProps {
 function SystemNotice({
   asrError,
   asrMode,
+  interviewStatus,
   interviewError,
   isRecording,
   isTranscribing,
@@ -24,20 +27,23 @@ function SystemNotice({
   voiceMode,
   voiceNotice,
 }: SystemNoticeProps) {
+  const primaryNotice = interviewError
+    ? interviewError
+    : interviewStatus === 'ended'
+      ? '面试流程已结束，请生成最终报告或 Reset Demo 后重新开始。'
+      : voiceNotice || getAsrNotice(asrMode, isRecording, isTranscribing)
   const notices = [
+    primaryNotice,
     isAvatarConnected(spatiusStatus)
       ? 'Avatar 已连接，数字人渲染与口型同步可用。'
       : 'Avatar fallback 可用，面试流程保持稳定。',
     getVoiceNotice(voiceMode),
-    getAsrNotice(asrMode, isRecording, isTranscribing),
-    voiceNotice,
     asrError,
-    interviewError,
   ].filter((notice): notice is string => Boolean(notice))
 
   return (
     <section className="system-notice" aria-label="系统状态">
-      {Array.from(new Set(notices)).map((notice) => (
+      {Array.from(new Set(notices)).slice(0, 4).map((notice) => (
         <p key={notice}>{notice}</p>
       ))}
     </section>
