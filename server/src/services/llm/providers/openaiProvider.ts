@@ -40,30 +40,28 @@ const nextSchema = {
   type: "object",
   additionalProperties: false,
   required: [
-    "feedbackText",
-    "nextQuestion",
-    "replyText",
+    "interviewerReply",
+    "feedbackSummary",
     "score",
-    "feedback",
-    "suggestion",
-    "shouldEnd",
+    "scoringReason",
     "coveredPoints",
     "missingPoints",
     "improvementTips",
-    "scoringReason",
+    "nextQuestion",
+    "suggestion",
+    "shouldEnd",
   ],
   properties: {
-    feedbackText: { type: "string" },
-    nextQuestion: { type: "string" },
-    replyText: { type: "string" },
+    interviewerReply: { type: "string" },
+    feedbackSummary: { type: "string" },
     score: { type: "number", minimum: 0, maximum: 100 },
-    feedback: { type: "string" },
-    suggestion: { type: "string" },
-    shouldEnd: { type: "boolean" },
+    scoringReason: { type: "string" },
     coveredPoints: { type: "array", items: { type: "string" } },
     missingPoints: { type: "array", items: { type: "string" } },
     improvementTips: { type: "array", items: { type: "string" } },
-    scoringReason: { type: "string" },
+    nextQuestion: { type: "string" },
+    suggestion: { type: "string" },
+    shouldEnd: { type: "boolean" },
   },
 };
 
@@ -108,13 +106,16 @@ export const openaiProvider: LlmProvider = {
       nextSchema,
     );
 
-    const feedbackText = data.feedbackText || data.feedback || "这轮回答已经记录。";
+    const feedbackText =
+      data.feedbackSummary || data.feedbackText || data.feedback || "这轮回答已经记录。";
     const nextQuestion = data.nextQuestion || "";
 
     return {
+      interviewerReply: data.interviewerReply,
+      feedbackSummary: feedbackText,
       feedbackText,
       nextQuestion,
-      replyText: data.replyText || [feedbackText, nextQuestion].filter(Boolean).join(" "),
+      replyText: data.interviewerReply || data.replyText || [feedbackText, nextQuestion].filter(Boolean).join(" "),
       score: normalizeScore(Number(data.score)),
       feedback: data.feedback || feedbackText,
       suggestion: data.suggestion,

@@ -137,7 +137,13 @@ export function calculateCoverageAdjustedScore({
     normalizedLlmScore * 0.45 + coverageScore * 0.55 + concreteBonus - shortPenalty,
   );
   const score = clamp(rawScore, 35, unknownCap);
-  const scoringReason = `题库覆盖度 ${knowledgeFeedback.coveredPoints.length}/${expectedCount}，LLM 基础分 ${normalizedLlmScore}，覆盖度校准分 ${coverageScore}${concreteBonus ? "，包含具体项目/数据加分" : ""}${shortPenalty ? "，回答偏短扣分" : ""}。`;
+  const scoringReason = createUserFriendlyScoringReason({
+    answer,
+    coverageRatio,
+    hasConcreteEvidence: concreteBonus > 0,
+    isShort: shortPenalty > 0,
+    isUnknown: isUnknownAnswer(answer),
+  });
 
   return {
     score,
@@ -283,7 +289,46 @@ function hasConcreteEvidence(answer: string): boolean {
 }
 
 function isUnknownAnswer(answer: string): boolean {
-  return /^(不会|不太会|不知道|不清楚|没做过|不了解|不会。|不知道。|不清楚。)$/i.test(answer.trim());
+  const normalized = answer.trim().replace(/[。！？!?，,\s]/g, "");
+  return /^(我|这个|这题|这道题)?(不会|不太会|不知道|不清楚|没做过|不了解|忘记了|没思路)$/.test(normalized);
+}
+
+function createUserFriendlyScoringReason({
+  answer,
+  coverageRatio,
+  hasConcreteEvidence,
+  isShort,
+  isUnknown,
+}: {
+  answer: string;
+  coverageRatio: number;
+  hasConcreteEvidence: boolean;
+  isShort: boolean;
+  isUnknown: boolean;
+}): string {
+  if (!answer.trim() || isUnknown) {
+    return "本轮得分较低，主要因为回答没有展开核心知识点，也缺少具体场景或解决思路。";
+  }
+
+  if (coverageRatio >= 0.8 && hasConcreteEvidence) {
+    return "本轮得分较高，因为回答覆盖了主要解决方案，并结合了具体项目场景，能够体现实际工程经验。";
+  }
+
+  if (hasConcreteEvidence && answer.trim().length >= 100) {
+    return "本轮回答结合了实际项目场景和结果数据，整体表现较好；如果再补充核心技术细节，会更完整。";
+  }
+
+  if (coverageRatio >= 0.5) {
+    return hasConcreteEvidence
+      ? "本轮回答能说明主要处理思路，也提到了实际场景；如果再补充关键细节和量化结果，表现会更完整。"
+      : "本轮回答有一定方向，但缺少更明确的技术细节和项目结果，因此分数处于中等水平。";
+  }
+
+  if (coverageRatio > 0 || !isShort) {
+    return "本轮回答有一定方向，但展开还不够充分，建议补充核心概念解释、具体场景和排查思路。";
+  }
+
+  return "本轮得分较低，主要因为回答较简短，没有展开核心知识点，也缺少具体场景或解决思路。";
 }
 
 export function isBankRole(role: InterviewRole): role is InterviewQuestion["role"] {

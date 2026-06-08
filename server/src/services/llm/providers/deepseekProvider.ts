@@ -38,13 +38,16 @@ export const deepseekProvider: LlmProvider = {
       buildNextPrompt(role, answer, history, context),
     );
 
-    const feedbackText = data.feedbackText || data.feedback || "这轮回答已经记录。";
+    const feedbackText =
+      data.feedbackSummary || data.feedbackText || data.feedback || "这轮回答已经记录。";
     const nextQuestion = data.nextQuestion || "";
 
     return {
+      interviewerReply: data.interviewerReply,
+      feedbackSummary: feedbackText,
       feedbackText,
       nextQuestion,
-      replyText: data.replyText || [feedbackText, nextQuestion].filter(Boolean).join(" "),
+      replyText: data.interviewerReply || data.replyText || [feedbackText, nextQuestion].filter(Boolean).join(" "),
       score: normalizeScore(Number(data.score)),
       feedback: data.feedback || feedbackText,
       suggestion: data.suggestion,

@@ -95,6 +95,8 @@ export interface NextInterviewResponse {
   provider?: LlmProvider;
   questionMeta?: QuestionMeta;
   knowledgeFeedback?: KnowledgeFeedback;
+  interviewerReply?: string;
+  feedbackSummary?: string;
   feedbackText?: string;
   nextQuestion?: string;
   coveredPoints?: string[];

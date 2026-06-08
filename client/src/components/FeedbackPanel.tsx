@@ -18,6 +18,7 @@ function FeedbackPanel({
   const tips =
     currentFeedback?.knowledgeFeedback?.improvementTips ??
     (currentFeedback?.suggestion ? [currentFeedback.suggestion] : [])
+  const scoreLabel = getScoreLabel(currentFeedback?.score)
 
   return (
     <aside className="panel feedback-panel" aria-label="反馈与报告">
@@ -39,11 +40,19 @@ function FeedbackPanel({
           <div className="score-copy">
             <h3>综合评价</h3>
             <p>{currentFeedback?.feedback ?? '提交回答后，Ava 会给出本轮综合评价、覆盖要点和改进建议。'}</p>
-            {currentFeedback?.scoringReason ? (
-              <p className="muted-copy">{currentFeedback.scoringReason}</p>
-            ) : null}
+            <p className="muted-copy">{scoreLabel}</p>
           </div>
         </section>
+
+        {currentFeedback?.scoringReason ? (
+          <section className="feedback-copy">
+            <List
+              title="评分依据"
+              tone="neutral"
+              items={[currentFeedback.scoringReason]}
+            />
+          </section>
+        ) : null}
 
         <section className="points-grid">
           <List
@@ -139,6 +148,30 @@ function List({
       )}
     </div>
   )
+}
+
+function getScoreLabel(score?: number): string {
+  if (typeof score !== 'number') {
+    return '等待提交回答后生成评分。'
+  }
+
+  if (score <= 39) {
+    return '需要补充基础'
+  }
+
+  if (score <= 59) {
+    return '基础较弱'
+  }
+
+  if (score <= 74) {
+    return '基本合格'
+  }
+
+  if (score <= 89) {
+    return '表现良好'
+  }
+
+  return '表现优秀'
 }
 
 export default FeedbackPanel

@@ -93,6 +93,8 @@ export interface NextInterviewResponse extends Feedback {
   provider?: LlmProvider
   questionMeta?: QuestionMeta
   knowledgeFeedback?: KnowledgeFeedback
+  interviewerReply?: string
+  feedbackSummary?: string
   feedbackText?: string
   nextQuestion?: string
   coveredPoints?: string[]

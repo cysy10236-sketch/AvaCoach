@@ -124,7 +124,7 @@ export function createNextResponse(
     provider: "mock",
     feedbackText,
     nextQuestion: shouldEnd ? "" : nextQuestion,
-    scoringReason: "Mock fallback uses answer length, role keywords, structure, and concrete evidence.",
+    scoringReason: createScoringReason(score, answer),
     status: shouldEnd ? "ended" : "in_progress",
     nextAllowed: !shouldEnd,
     reportReady: shouldEnd,
@@ -172,7 +172,7 @@ export function createReportResponse(
 
 function createNextQuestion(answer: string, defaultQuestion: string): string {
   if (isCompensationQuestion(answer)) {
-    return "薪资和福利通常会在 HR 或后续流程里详细沟通。我们先回到当前面试：请你结合一个项目，说明你在核心问题上的具体处理过程。";
+    return "薪资和流程通常会在后续 HR 环节详细沟通。我们先回到技术部分，请你结合一个项目，说明你在核心问题上的具体处理过程。";
   }
 
   if (isQuestionChangeRequest(answer)) {
@@ -183,7 +183,7 @@ function createNextQuestion(answer: string, defaultQuestion: string): string {
     return "没关系，我们换一个更基础的角度。你可以先说说这个知识点在实际项目里通常解决什么问题。";
   }
 
-  return `我继续追问一个相关问题：${defaultQuestion}`;
+  return `那我们沿着这个方向再看一个具体场景：${defaultQuestion}`;
 }
 
 function scoreAnswer(answer: string, keywords: string[]): number {
@@ -205,15 +205,56 @@ function scoreAnswer(answer: string, keywords: string[]): number {
 }
 
 function createFeedback(score: number, answer: string): string {
+  if (isShortUnknownAnswer(answer)) {
+    return "没关系，这类问题可以先从基础概念切入。";
+  }
+
+  if (isQuestionChangeRequest(answer)) {
+    return "可以，面试里遇到不熟的点很正常，我们换个更容易展开的角度。";
+  }
+
+  if (isCompensationQuestion(answer)) {
+    return "薪资和流程通常会在后续 HR 环节详细沟通，我们先把技术部分完成。";
+  }
+
+  const specificFeedback = createSpecificFeedback(answer);
+  if (specificFeedback) {
+    return specificFeedback;
+  }
+
   if (score >= 82) {
     return "这轮回答比较清晰，能体现岗位相关经验，并且有一定结构感。";
   }
 
   if (answer.trim().length < 80) {
-    return "回答方向可以继续展开，目前信息量偏少，面试官还难以判断你的真实贡献。";
+    return "这轮回答还比较简短，面试官暂时很难判断你的真实处理经验。";
   }
 
   return "回答比较完整，但还缺少更具体的项目细节、行动过程和结果证明。";
+}
+
+function createSpecificFeedback(answer: string): string {
+  const normalized = answer.toLowerCase();
+
+  if (
+    /devtools|lighthouse|bundle|analyzer|懒加载|按需|图片|cdn|首屏|长任务|重排|重绘|内存/i.test(answer)
+  ) {
+    return "你把性能优化拆到了定位工具、资源体积和运行时表现几个层面，这个排查路径比较贴近真实项目。";
+  }
+
+  if (/flex|grid|媒体查询|响应式|rem|vw|vh|多语言|按钮/i.test(answer)) {
+    return "你能把布局方案和适配场景联系起来说明，说明你对响应式问题有基本的工程判断。";
+  }
+
+  if (/react|usememo|usecallback|memo|state|props|渲染/i.test(normalized)) {
+    return "你提到的 React 渲染相关点比较实用，后续可以再结合一次真实排查过程说明取舍。";
+  }
+
+  if (/http|dns|tcp|tls|请求|响应|状态码|缓存/i.test(answer)) {
+    return "你能从请求链路和响应结果两侧理解问题，这比只看接口返回更完整。";
+  }
+
+  return "";
 }
 
 function createSuggestion(score: number, answer: string): string {
@@ -228,14 +269,31 @@ function createSuggestion(score: number, answer: string): string {
   return "建议使用 STAR 结构补充背景、行动和结果，并突出你个人负责的部分。";
 }
 
+function createScoringReason(score: number, answer: string): string {
+  if (isShortUnknownAnswer(answer)) {
+    return "本轮得分较低，主要是因为回答没有提供有效内容，暂时无法判断对核心知识点的掌握情况。";
+  }
+
+  if (score >= 85) {
+    return "本轮回答结构比较清晰，能结合岗位方向和实际经验，因此得分较高。";
+  }
+
+  if (score >= 70) {
+    return "本轮回答方向基本正确，但还可以补充更具体的项目场景、行动过程和结果证明。";
+  }
+
+  return "本轮回答还有较多可展开空间，建议先补充核心概念，再结合具体案例说明。";
+}
+
 function isCompensationQuestion(answer: string): boolean {
   return /薪资|工资|待遇|福利|加班|offer|hr/i.test(answer);
 }
 
 function isQuestionChangeRequest(answer: string): boolean {
-  return /换.*题|换.*问题|换一个|不太熟|不会|没做过/i.test(answer) && answer.length > 8;
+  return /换.*题|换.*问题|换一个|下一题|下一个|不太熟|不会|没做过/i.test(answer) && answer.length > 6;
 }
 
 function isShortUnknownAnswer(answer: string): boolean {
-  return /^(不会|不太会|不知道|不清楚|没做过|不了解|不会。|不知道。|不清楚。)$/i.test(answer.trim());
+  const normalized = answer.trim().replace(/[。！？!?，,\s]/g, "");
+  return /^(我|这个|这题|这道题)?(不会|不太会|不知道|不清楚|没做过|不了解|忘记了|没思路)$/.test(normalized);
 }
