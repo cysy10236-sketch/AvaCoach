@@ -2,115 +2,68 @@
 
 ## Goal
 
-The first milestone should be demo-ready without depending on external vendors. AvaCoach should feel like a digital human mock interview product even before Spatius Web SDK, LLM, and TTS are integrated.
+AvaCoach should be demo-ready even when some external services are unavailable. The user should still understand the product value: a Chinese digital human interviewer that asks questions, listens to answers, evaluates performance, and produces a report.
 
-## Why Mock/Fallback First
+## Current Demo Positioning
 
-Mock and fallback behavior lets the product prove the core interview loop before vendor integration begins. It also protects the demo from API keys, SDK loading issues, network instability, rate limits, and latency while the product direction is still being shaped.
+The main demo path is now:
 
-This stage focuses on the user experience:
+```text
+Role + Topic
+→ LLM dynamic first question
+→ Candidate answer
+→ LLM turn planning and evaluation
+→ Natural follow-up or close
+→ Feedback and final report
+```
 
-- Can a candidate choose a role and start an interview?
-- Does the digital human area communicate interviewer state?
-- Can the user answer questions and receive feedback?
-- Can the session end with a useful report?
-- Does the product remain presentable when real services are unavailable?
+The question bank is no longer shown as a user-facing mode in the main demo. It remains as a structured knowledge asset for future evaluator design.
 
-## Current Approach
+This positioning makes the demo feel more natural and professional. A real interviewer does not mechanically compare every answer against a fixed checklist in front of the candidate. Ava should use the candidate's answer to decide what to ask next.
 
-- Use role-specific mock interview openings and questions.
-- Use a local structured IT question bank when the user chooses IT Question Bank mode.
-- Use expectedPoints from the question bank to produce deterministic covered/missing point feedback.
-- Use simple mock scoring based on answer length, role keywords, and response structure.
-- Keep all provider-facing logic on the backend.
-- Show a fallback digital human area in the frontend while the Spatius SDK is not available.
-- Keep the demo flow usable even if external APIs are missing, slow, or unavailable.
-- The current fallback demo does not depend on Spatius being configured.
-- If Spatius Session Token retrieval fails, the user can still complete the full mock interview flow.
-- If OpenAI or DeepSeek LLM generation fails, or the selected provider key is missing, the backend automatically falls back to deterministic mock interview logic.
+## Why Keep The Question Bank
+
+The question bank is still valuable and should stay in the project:
+
+- It proves the team has structured IT interview domain knowledge.
+- It can seed Topic and first-question design.
+- It can support offline smoke tests and regression cases.
+- It can become a future rubric/evaluator layer.
+- It can be expanded into JD-specific or enterprise-owned question sets.
+
+The bank is not a discarded feature. It is a retained assessment asset, just not the main demo interaction model.
+
+## Fallback Strategy
+
+Fallback is part of the product design:
+
+- Spatius token failure -> Avatar placeholder, interview still usable.
+- AvatarKit failure -> text interview remains available.
+- TTS failure -> browser speech or silent text mode.
+- ASR failure -> browser ASR or manual input.
+- LLM failure -> mock provider.
+
+The core interview flow should not depend on any single provider.
 
 ## Current Demo Flow
 
-1. The user selects a target role.
-2. The frontend calls `POST /api/interview/start`.
-3. Ava displays either an AI-generated first question or a structured question-bank question.
-4. The candidate submits an answer.
-5. The frontend calls `POST /api/interview/next`.
-6. The backend returns feedback, a score, and the next follow-up question.
-7. In question-bank mode, feedback includes covered points, missing points, and improvement tips.
-8. After three candidate rounds, Ava suggests ending the interview.
-9. The frontend calls `POST /api/interview/report`.
-10. The final report shows overall score, strengths, weaknesses, suggestions, and question-bank topic summaries when available.
+1. Open the page.
+2. Connect Avatar.
+3. Select role and Topic.
+4. Start Interview.
+5. Ava asks a Topic-guided first question.
+6. Candidate answers by voice or text.
+7. ASR transcript is editable before submission.
+8. Submit Answer.
+9. Ava gives natural feedback, a score, a user-friendly scoring reason, and one next question if needed.
+10. After the planned rounds, End Interview generates the final report.
 
-## Planned Fallback Layers
+## Future Direction
 
-1. Digital human fallback
-   - Before Spatius is connected, render a polished placeholder interviewer state.
-   - After Spatius is connected, detect SDK load/init failures and fall back to the placeholder.
+Next improvements should focus on:
 
-2. Interview intelligence fallback
-   - Before LLM integration, use predefined interview questions and simple rubric feedback.
-   - After LLM integration, return mock feedback if the selected provider request fails.
-   - Preserve the existing response shape so the frontend does not break when switching between LLM and mock.
-   - Support `LLM_PROVIDER=openai`, `LLM_PROVIDER=deepseek`, and `LLM_PROVIDER=mock`.
-
-3. Question bank fallback
-   - If topic does not match, pick another question in the same role.
-   - If role does not match, fall back to behavioral.
-   - If difficulty does not match, ignore difficulty and keep the flow running.
-   - Keep the seed bank local and replaceable.
-
-4. Voice fallback
-   - Before TTS integration, use text-only interviewer responses.
-   - After TTS integration, continue showing text responses when TTS fails.
-   - If backend TTS fails, use browser SpeechSynthesis.
-   - If browser speech fails, use silent text mode.
-
-## Later Spatius SDK Integration Plan
-
-- Add SDK loading and initialization inside the frontend.
-- Request any needed session/token data from the backend.
-- Keep Spatius credentials and signing logic on the backend.
-- Document setup steps, required environment variables, error states, and fallback behavior in `docs/spatius-integration.md`.
-- Preserve the existing static avatar as a stable fallback so interview demos can continue even during SDK, token, or network failures.
-
-## Replacing Mock Layers Later
-
-- Replace the static avatar card with a Spatius SDK component while preserving the same `AvatarStatus` states.
-- Replace backend mock question generation with an LLM service behind `/api/interview/start` and `/api/interview/next`.
-- Replace mock scoring with LLM rubric evaluation, keeping the existing `Feedback` response shape where possible.
-- Replace text-only interviewer replies with TTS audio playback, while keeping text visible for accessibility and fallback.
-- Keep the current mock functions as a safe fallback path when Spatius, LLM, or TTS fails.
-
-## LLM Fallback Strategy
-
-The LLM layer is valuable for dynamic follow-up questions and richer final reports, but it should not be a hard dependency for the interview demo. Network failures, quota limits, JSON parse errors, model errors, and missing provider keys all fall back to mock logic inside the backend provider layer.
-
-This keeps the product demo stable: a candidate can always start an interview, answer three rounds, receive feedback, and generate a report even when the LLM is unavailable.
-
-## TTS Fallback Strategy
-
-Voice improves the digital human illusion, but audio is not required for the interview to work. AvaCoach now tries backend TTS first, then browser SpeechSynthesis, then silent text mode.
-
-This means a TTS provider failure, missing `OPENAI_API_KEY`, browser autoplay issue, or unsupported SpeechSynthesis implementation does not block the demo. The conversation text, feedback, and final report remain visible.
-
-## Question Bank Strategy
-
-The structured IT question bank makes AvaCoach feel like a real training product instead of a random AI question generator.
-
-The current bank is intentionally a small demo seed bank. It does not scrape login-only, paid, restricted, or anti-scraping content. It does not mirror any website or store full external pages. Questions are manually structured around common interview topics with expectedPoints and followUps.
-
-This seed layer can later be replaced by:
-
-- enterprise-owned question banks
-- JD-generated interview question sets
-- user-customized question banks
-- larger curated topic rubrics
-
-## Product Notes To Capture Later
-
-- SDK onboarding clarity.
-- Initialization and error handling experience.
-- Latency and perceived responsiveness.
-- Avatar customization needs for interview scenarios.
-- Recommended SDK improvements based on integration friction.
+- Interview Turn Planner as an explicit decision layer.
+- Question bank as pluggable rubric/evaluator data.
+- Better calibration between LLM evaluation and structured rubrics.
+- JD-specific topic plans.
+- Candidate history and personalized practice plans.

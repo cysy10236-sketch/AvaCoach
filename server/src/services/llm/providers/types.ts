@@ -8,7 +8,10 @@ import type {
 } from "../../../types/interview.js";
 
 export interface LlmProvider {
-  generateOpeningAndFirstQuestion(role: InterviewRole): Promise<StartInterviewResponse>;
+  generateOpeningAndFirstQuestion(
+    role: InterviewRole,
+    topic?: string,
+  ): Promise<StartInterviewResponse>;
   generateFollowUp(
     role: InterviewRole,
     answer: string,

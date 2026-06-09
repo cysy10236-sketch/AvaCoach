@@ -14,9 +14,12 @@ import type {
 import type { LlmProvider } from "./types.js";
 
 export const mockProvider: LlmProvider = {
-  async generateOpeningAndFirstQuestion(role: InterviewRole): Promise<StartInterviewResponse> {
+  async generateOpeningAndFirstQuestion(
+    role: InterviewRole,
+    topic?: string,
+  ): Promise<StartInterviewResponse> {
     return {
-      ...createStartResponse(role),
+      ...createStartResponse(role, topic),
       source: "mock",
       provider: "mock",
     };

@@ -16,8 +16,11 @@ import {
 import type { ChatCompletionsResponse, LlmProvider } from "./types.js";
 
 export const deepseekProvider: LlmProvider = {
-  async generateOpeningAndFirstQuestion(role: InterviewRole): Promise<StartInterviewResponse> {
-    const data = await requestJson<StartInterviewResponse>(buildStartPrompt(role));
+  async generateOpeningAndFirstQuestion(
+    role: InterviewRole,
+    topic?: string,
+  ): Promise<StartInterviewResponse> {
+    const data = await requestJson<StartInterviewResponse>(buildStartPrompt(role, topic));
 
     return {
       replyText: data.replyText,

@@ -13,8 +13,6 @@ function FeedbackPanel({
   round,
   canEnd,
 }: FeedbackPanelProps) {
-  const coveredPoints = currentFeedback?.knowledgeFeedback?.coveredPoints ?? []
-  const missingPoints = currentFeedback?.knowledgeFeedback?.missingPoints ?? []
   const tips =
     currentFeedback?.knowledgeFeedback?.improvementTips ??
     (currentFeedback?.suggestion ? [currentFeedback.suggestion] : [])
@@ -39,7 +37,7 @@ function FeedbackPanel({
           </div>
           <div className="score-copy">
             <h3>综合评价</h3>
-            <p>{currentFeedback?.feedback ?? '提交回答后，Ava 会给出本轮综合评价、覆盖要点和改进建议。'}</p>
+            <p>{currentFeedback?.feedback ?? '提交回答后，Ava 会给出本轮综合评价、评分依据和改进建议。'}</p>
             <p className="muted-copy">{scoreLabel}</p>
           </div>
         </section>
@@ -53,21 +51,6 @@ function FeedbackPanel({
             />
           </section>
         ) : null}
-
-        <section className="points-grid">
-          <List
-            title={`已覆盖要点 ${coveredPoints.length ? `(${coveredPoints.length})` : ''}`}
-            tone="ok"
-            items={coveredPoints}
-            empty="等待候选人回答后生成。"
-          />
-          <List
-            title={`缺失要点 ${missingPoints.length ? `(${missingPoints.length})` : ''}`}
-            tone="danger"
-            items={missingPoints}
-            empty="暂无明显缺失。"
-          />
-        </section>
 
         <section className="feedback-copy">
           <List
@@ -96,14 +79,6 @@ function FeedbackPanel({
               <List title="强项" tone="ok" items={report.strengths} />
               <List title="薄弱项" tone="danger" items={report.weaknesses} />
               <List title="推荐练习方向" tone="idea" items={report.suggestions} />
-              {report.bankReport ? (
-                <>
-                  <List title="优势知识点" tone="ok" items={report.bankReport.strongTopics} />
-                  <List title="薄弱知识点" tone="danger" items={report.bankReport.weakTopics} />
-                  <List title="遗漏知识点" tone="danger" items={report.bankReport.missedKnowledgePoints} />
-                  <List title="推荐练习主题" tone="idea" items={report.bankReport.recommendedPracticeTopics} />
-                </>
-              ) : null}
             </>
           ) : (
             <p className="muted-copy">点击 End Interview 后，这里会生成结构化报告，不会改变页面整体布局。</p>

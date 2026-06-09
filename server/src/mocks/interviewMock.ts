@@ -83,12 +83,14 @@ const roleProfiles: Record<
   },
 };
 
-export function createStartResponse(role: InterviewRole): StartInterviewResponse {
+export function createStartResponse(role: InterviewRole, topic?: string): StartInterviewResponse {
   const profile = roleProfiles[role] ?? roleProfiles.behavioral;
+  const topicQuestion = createTopicStartQuestion(topic);
+  const firstQuestion = topicQuestion || profile.firstQuestion;
 
   return {
-    replyText: `${profile.opening} ${profile.firstQuestion}`,
-    question: profile.firstQuestion,
+    replyText: `${profile.opening} ${firstQuestion}`,
+    question: firstQuestion,
     stage: "asking",
     source: "mock",
     provider: "mock",
@@ -96,6 +98,31 @@ export function createStartResponse(role: InterviewRole): StartInterviewResponse
     nextAllowed: true,
     reportReady: false,
   };
+}
+
+function createTopicStartQuestion(topic?: string): string {
+  const normalized = topic?.trim();
+  if (!normalized) {
+    return "";
+  }
+
+  if (/vector|向量/i.test(normalized)) {
+    return "我们先从 Vector Database 相关的问题开始。向量数据库相比普通数据库存数组，多解决了哪些问题？";
+  }
+
+  if (/http|network|cors/i.test(normalized)) {
+    return "我们先从 HTTP / Network 相关的问题开始。请解释 CORS 的作用、预检请求触发条件，以及常见排查思路。";
+  }
+
+  if (/react/i.test(normalized)) {
+    return "我们先从 React 相关的问题开始。请说明一次组件渲染变慢时，你会如何定位原因并做优化？";
+  }
+
+  if (/rag/i.test(normalized)) {
+    return "我们先从 RAG 相关的问题开始。请说明你会如何设计一个可上线的知识库问答链路。";
+  }
+
+  return `我们先从 ${normalized} 相关的问题开始。请结合项目经验，说明你对这个方向的核心理解和处理思路。`;
 }
 
 export function createNextResponse(

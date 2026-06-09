@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { randomInt } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import type {
   BankReportSummary,
@@ -72,6 +73,19 @@ export function pickQuestion(filters: QuestionFilters): InterviewQuestion {
   const index = stableHash(stableSeed) % candidates.length;
 
   return candidates[index] ?? questions.find((question) => question.role === "behavioral") ?? questions[0];
+}
+
+export function pickRandomQuestion(
+  filters: QuestionFilters,
+  excludeQuestionIds: string[] = [],
+): InterviewQuestion {
+  const candidates = getQuestionBankQuestions(filters);
+  const excludedIds = new Set(excludeQuestionIds);
+  const availableCandidates = candidates.filter((question) => !excludedIds.has(question.id));
+  const pool = availableCandidates.length > 0 ? availableCandidates : candidates;
+  const index = randomInt(Math.max(1, pool.length));
+
+  return pool[index] ?? questions.find((question) => question.role === "behavioral") ?? questions[0];
 }
 
 export function toQuestionMeta(question: InterviewQuestion): QuestionMeta {

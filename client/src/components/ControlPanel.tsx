@@ -2,8 +2,6 @@ import type {
   InterviewRole,
   InterviewStage,
   InterviewFlowStatus,
-  QuestionDifficulty,
-  QuestionSource,
 } from '../types/interview'
 
 type AsrMode = 'stream' | 'browser' | 'mock' | 'unavailable'
@@ -22,16 +20,12 @@ interface ControlPanelProps {
   role: InterviewRole
   stage: InterviewStage
   canEnd: boolean
-  difficulty: QuestionDifficulty
-  questionSource: QuestionSource
   topic: string
   topics: string[]
   transcript: string
   onAnswerChange: (value: string) => void
   onClearTranscript: () => void
-  onDifficultyChange: (difficulty: QuestionDifficulty) => void
   onEnd: () => void
-  onQuestionSourceChange: (source: QuestionSource) => void
   onReset: () => void
   onRoleChange: (role: InterviewRole) => void
   onStart: () => void
@@ -50,12 +44,6 @@ const roles: { value: InterviewRole; label: string }[] = [
   { value: 'behavioral', label: '通用行为面试' },
 ]
 
-const difficulties: { value: QuestionDifficulty; label: string }[] = [
-  { value: 'easy', label: '简单' },
-  { value: 'medium', label: '中等' },
-  { value: 'hard', label: '困难' },
-]
-
 function ControlPanel({
   answer,
   asrError,
@@ -70,16 +58,12 @@ function ControlPanel({
   role,
   stage,
   canEnd,
-  difficulty,
-  questionSource,
   topic,
   topics,
   transcript,
   onAnswerChange,
   onClearTranscript,
-  onDifficultyChange,
   onEnd,
-  onQuestionSourceChange,
   onReset,
   onRoleChange,
   onStart,
@@ -138,68 +122,41 @@ function ControlPanel({
             </select>
           </label>
 
-          <div className="field">
-            <span>问题来源</span>
-            <div className="segmented-control">
-              <button
-                className={questionSource === 'llm' ? 'selected' : ''}
-                disabled={!canStart || isBusy}
-                onClick={() => onQuestionSourceChange('llm')}
-                type="button"
-              >
-                AI 生成
-              </button>
-              <button
-                className={questionSource === 'bank' ? 'selected' : ''}
-                disabled={!canStart || isBusy}
-                onClick={() => onQuestionSourceChange('bank')}
-                type="button"
-              >
-                IT 题库
-              </button>
+          <label className="field">
+            <span>面试模式</span>
+            <div className="mode-summary-card">
+              <strong>AI 动态面试</strong>
+              <small>首题按方向生成，后续根据候选人回答自然追问、换题或收束。</small>
             </div>
-          </div>
+          </label>
 
           <label className="field">
-            <span>难度选择</span>
+            <span>面试方向 / Topic</span>
             <select
-              disabled={!canStart || isBusy}
-              onChange={(event) => onDifficultyChange(event.target.value as QuestionDifficulty)}
-              value={difficulty}
+              disabled={!canStart || isBusy || topics.length === 0}
+              onChange={(event) => onTopicChange(event.target.value)}
+              value={topic}
             >
-              {difficulties.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
+              {topics.map((item) => (
+                <option key={item} value={item}>
+                  {item}
                 </option>
               ))}
             </select>
+            <div className="topic-tags">
+              {topics.slice(0, 8).map((item) => (
+                <button
+                  className={item === topic ? 'topic-pill selected' : 'topic-pill'}
+                  disabled={!canStart || isBusy}
+                  key={item}
+                  onClick={() => onTopicChange(item)}
+                  type="button"
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
           </label>
-
-          {questionSource === 'bank' ? (
-            <label className="field">
-              <span>知识点 / Topic</span>
-              <select
-                disabled={!canStart || isBusy || topics.length === 0}
-                onChange={(event) => onTopicChange(event.target.value)}
-                value={topic}
-              >
-                <option value="">任意知识点</option>
-                {topics.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-              <div className="topic-tags">
-                {(topic ? [topic] : topics.slice(0, 8)).map((item) => (
-                  <span className="topic-pill" key={item}>
-                    {item}
-                  </span>
-                ))}
-                {topics.length === 0 ? <span className="topic-pill muted">等待题库</span> : null}
-              </div>
-            </label>
-          ) : null}
         </section>
 
         <section className="side-card action-card">
@@ -332,7 +289,7 @@ function ControlPanel({
           >
             {isBusy && stage === 'evaluating' ? '提交中...' : 'Submit Answer'}
           </button>
-          <p>确认回答后再提交，系统会生成追问、评分与知识点反馈。</p>
+          <p>确认回答后再提交，系统会生成自然追问、评分依据和改进建议。</p>
         </div>
       </section>
     </>

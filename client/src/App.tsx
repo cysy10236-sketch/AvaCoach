@@ -21,7 +21,6 @@ import {
   stopAsrDebugSession,
 } from './services/asrDebug'
 import { speakTextWithAvatar } from './services/avatarSpeechPlayer'
-import { fetchQuestionBankTopics } from './services/questionBankApi'
 import {
   createStreamingAsrClient,
   type StreamingAsrClient,
@@ -40,9 +39,6 @@ import type {
   InterviewStage,
   LlmProvider,
   Message,
-  QuestionDifficulty,
-  QuestionMeta,
-  QuestionSource,
   Report,
   ResponseSource,
 } from './types/interview'
@@ -56,10 +52,7 @@ const DEFAULT_SESSION_ID = 'default-demo-session'
 
 function App() {
   const [role, setRole] = useState<InterviewRole>('frontend')
-  const [questionSource, setQuestionSource] = useState<QuestionSource>('llm')
-  const [difficulty, setDifficulty] = useState<QuestionDifficulty>('medium')
   const [topic, setTopic] = useState('')
-  const [topics, setTopics] = useState<string[]>([])
   const [stage, setStage] = useState<InterviewStage>('idle')
   const [avatarStatus, setAvatarStatus] = useState<AvatarStatus>('idle')
   const [messages, setMessages] = useState<Message[]>([])
@@ -79,8 +72,6 @@ function App() {
   })
   const [voiceMode, setVoiceMode] = useState<VoiceMode>('silent')
   const [voiceNotice, setVoiceNotice] = useState<string | null>(null)
-  const [activeQuestionMeta, setActiveQuestionMeta] = useState<QuestionMeta | null>(null)
-  const [answeredQuestionMetas, setAnsweredQuestionMetas] = useState<QuestionMeta[]>([])
   const [asrSupported, setAsrSupported] = useState(false)
   const [asrMode, setAsrMode] = useState<AsrMode>('unavailable')
   const [isRecording, setIsRecording] = useState(false)
@@ -109,6 +100,7 @@ function App() {
     () => messages.filter((message) => message.speaker === 'candidate').length,
     [messages],
   )
+  const topics = useMemo(() => getRoleTopics(role), [role])
   const disableVoiceInput = avatarStatus === 'speaking' || interviewStatus === 'ended'
 
   useEffect(() => {
@@ -118,38 +110,10 @@ function App() {
   }, [])
 
   useEffect(() => {
-    let cancelled = false
-
-    if (questionSource !== 'bank') {
-      setTopics([])
-      setTopic('')
-      return () => {
-        cancelled = true
-      }
-    }
-
-    fetchQuestionBankTopics(role)
-      .then((nextTopics) => {
-        if (cancelled) {
-          return
-        }
-
-        setTopics(nextTopics)
-        setTopic((currentTopic) =>
-          currentTopic && nextTopics.includes(currentTopic) ? currentTopic : '',
-        )
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setTopics([])
-          setTopic('')
-        }
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [questionSource, role])
+    setTopic((currentTopic) =>
+      currentTopic && topics.includes(currentTopic) ? currentTopic : topics[0] ?? '',
+    )
+  }, [topics])
 
   const setVoiceFallbackNotice = useCallback((mode: VoiceMode) => {
     setVoiceNotice(
@@ -321,8 +285,6 @@ function App() {
     setReport(null)
     setShouldEnd(false)
     setMessages([])
-    setActiveQuestionMeta(null)
-    setAnsweredQuestionMetas([])
     setTranscript('')
     setStage('opening')
     setAvatarStatus('evaluating')
@@ -330,15 +292,13 @@ function App() {
 
     try {
       const response = await startInterview(role, {
-        questionSource,
-        difficulty,
+        questionSource: 'llm',
         topic: topic || undefined,
         sessionId,
       })
       setSessionId(response.sessionId ?? sessionId)
       setResponseSource(response.source ?? 'mock')
       setLlmProvider(response.provider ?? 'mock')
-      setActiveQuestionMeta(response.questionMeta ?? null)
       setInterviewStatus(response.status ?? 'in_progress')
       setStage(response.stage)
       playInterviewerReply(response.replyText)
@@ -388,7 +348,7 @@ function App() {
         role,
         trimmedAnswer,
         nextHistory,
-        activeQuestionMeta,
+        null,
         interviewStatus,
         sessionId,
       )
@@ -411,10 +371,6 @@ function App() {
       setShouldEnd(response.shouldEnd || response.reportReady === true || response.nextAllowed === false)
       setInterviewStatus(response.status ?? (response.shouldEnd ? 'ended' : 'in_progress'))
       setSessionId(response.sessionId ?? sessionId)
-      if (activeQuestionMeta) {
-        setAnsweredQuestionMetas((current) => [...current, activeQuestionMeta])
-      }
-      setActiveQuestionMeta(response.questionMeta ?? activeQuestionMeta)
       if (response.replyText) {
         playInterviewerReply(response.replyText)
       }
@@ -447,7 +403,7 @@ function App() {
     setVoiceNotice('正在生成最终报告...')
 
     try {
-      const response = await createInterviewReport(role, messages, answeredQuestionMetas, sessionId)
+      const response = await createInterviewReport(role, messages, [], sessionId)
       setSessionId(response.sessionId ?? sessionId)
       setResponseSource(response.source ?? 'mock')
       setLlmProvider(response.provider ?? 'mock')
@@ -470,10 +426,7 @@ function App() {
     stopCurrentSpeech()
     stopCurrentAsr()
     setRole('frontend')
-    setQuestionSource('llm')
-    setDifficulty('medium')
     setTopic('')
-    setTopics([])
     setStage('idle')
     setAvatarStatus('idle')
     setMessages([])
@@ -490,8 +443,6 @@ function App() {
     setLlmProvider('mock')
     setVoiceMode('silent')
     setVoiceNotice(null)
-    setActiveQuestionMeta(null)
-    setAnsweredQuestionMetas([])
     setIsBusy(false)
     activeActionRef.current = null
     latestPartialRef.current = ''
@@ -764,7 +715,6 @@ function App() {
           asrMode={asrMode}
           asrSupported={asrSupported}
           canEnd={shouldEnd && !report}
-          difficulty={difficulty}
           disableVoiceInput={disableVoiceInput}
           error={null}
           isBusy={isBusy}
@@ -773,9 +723,7 @@ function App() {
           interviewStatus={interviewStatus}
           onAnswerChange={setAnswer}
           onClearTranscript={handleClearTranscript}
-          onDifficultyChange={setDifficulty}
           onEnd={handleEnd}
-          onQuestionSourceChange={setQuestionSource}
           onReset={handleReset}
           onRoleChange={setRole}
           onStart={handleStart}
@@ -784,7 +732,6 @@ function App() {
           onSubmit={handleSubmit}
           onTopicChange={setTopic}
           onUseTranscript={handleUseTranscript}
-          questionSource={questionSource}
           role={role}
           stage={stage}
           topic={topic}
@@ -861,3 +808,19 @@ function mapAsrErrorToUserMessage(
 }
 
 export default App
+
+function getRoleTopics(role: InterviewRole): string[] {
+  switch (role) {
+    case 'frontend':
+      return ['HTTP / Network', 'React', 'JavaScript', 'TypeScript', 'CSS Layout', 'Performance']
+    case 'backend':
+      return ['API Design', 'Database', 'Redis', 'Concurrency', 'Reliability', 'Security']
+    case 'ai':
+      return ['Vector Database', 'RAG', 'Embedding', 'LLM Application', 'Model Evaluation', 'AI Engineering']
+    case 'product':
+      return ['Requirement Analysis', 'User Research', 'Metrics', 'Prioritization', 'Growth', 'Cross-team Collaboration']
+    case 'behavioral':
+    default:
+      return ['Project Experience', 'Teamwork', 'Problem Solving', 'Learning Ability', 'Communication', 'Ownership']
+  }
+}

@@ -176,7 +176,7 @@
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 330px minmax(610px, 1fr) 400px;
+  grid-template-columns: 370px minmax(610px, 1fr) 400px;
   grid-template-rows: minmax(0, 1fr) 238px;
   grid-template-areas:
     "sidebar center feedback"
@@ -257,7 +257,7 @@
 }
 
 .config-card {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .action-card {
@@ -336,23 +336,23 @@ textarea:focus {
 }
 
 .topic-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
   min-width: 0;
-  max-height: 76px;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: visible;
 }
 
 .topic-pill {
   display: inline-flex;
   align-items: center;
-  max-width: 130px;
-  min-height: 28px;
-  padding: 0 10px;
+  justify-content: center;
+  width: 100%;
+  max-width: none;
+  min-height: 36px;
+  padding: 0 12px;
   border: 1px solid #bfdaff;
-  border-radius: 999px;
+  border-radius: 12px;
   color: var(--blue-strong);
   background: #f1f7ff;
   overflow: hidden;
@@ -362,9 +362,42 @@ textarea:focus {
   font-weight: 760;
 }
 
+.topic-pill.selected {
+  color: #ffffff;
+  background: linear-gradient(135deg, #2f6df6, #16b8b3);
+  border-color: transparent;
+}
+
 .topic-pill.muted {
   color: var(--muted);
   background: #f7f9fc;
+}
+
+button.topic-pill {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 12px;
+}
+
+.mode-summary-card {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 13px;
+  border: 1px solid #d8e8ff;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f3f8ff 0%, #eefdfb 100%);
+}
+
+.mode-summary-card strong {
+  color: #10233f;
+  font-size: 14px;
+}
+
+.mode-summary-card small {
+  color: #60728a;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
 }
 
 .button-row {

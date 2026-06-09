@@ -9,9 +9,10 @@ import {
   createBankReportSummary,
   evaluateAnswerAgainstQuestion,
   normalizeDifficulty,
-  pickQuestion,
+  pickRandomQuestion,
   toQuestionMeta,
 } from "../services/questionBank/questionBankService.js";
+import { planInterviewTurn } from "../services/interview/interviewTurnPlanner.js";
 import type {
   InterviewFlowStatus,
   InterviewRole,
@@ -29,6 +30,7 @@ const interviewRouter = Router();
 const validRoles: InterviewRole[] = ["frontend", "backend", "product", "ai", "behavioral"];
 const DEFAULT_SESSION_ID = "default-demo-session";
 const MAX_ROUNDS = 3;
+const BANK_MODE_ENABLED = false;
 
 const internalReplyTerms = [
   "你的回答提到了一些关键方向",
@@ -63,12 +65,13 @@ interviewRouter.post("/start", async (req, res) => {
   const role = normalizeRole(body.role);
   const sessionId = normalizeSessionId(body.sessionId);
 
-  if (body.questionSource === "bank") {
-    const question = pickQuestion({
+  if (BANK_MODE_ENABLED && body.questionSource === "bank") {
+    const previousQuestionId = sessions.get(sessionId)?.currentQuestionMeta?.id;
+    const question = pickRandomQuestion({
       role: role === "product" ? "behavioral" : role,
       difficulty: normalizeDifficulty(body.difficulty),
       topic: typeof body.topic === "string" ? body.topic : undefined,
-    });
+    }, previousQuestionId ? [previousQuestionId] : []);
     const questionMeta = toQuestionMeta(question);
     resetSession(sessionId, questionMeta);
 
@@ -97,7 +100,8 @@ interviewRouter.post("/start", async (req, res) => {
   }
 
   resetSession(sessionId);
-  const response = await generateOpeningAndFirstQuestion(role);
+  const topic = typeof body.topic === "string" ? body.topic.trim() : "";
+  const response = await generateOpeningAndFirstQuestion(role, topic || undefined);
   debugInterviewFlow("start_response", {
     sessionId,
     nextStatus: "in_progress",
@@ -304,13 +308,19 @@ function buildBankNextResponse({
   questionMeta: QuestionMeta;
   reachedMaxRounds: boolean;
 }): NextInterviewResponse {
-  const knowledgeFeedback = evaluateAnswerAgainstQuestion(answer, questionMeta);
-  const adjustedScore = calculateCoverageAdjustedScore({
-    answer,
-    knowledgeFeedback,
-    llmScore: llmResponse.score,
-    questionMeta,
-  });
+  const answerRound = Math.max(1, history.filter((message) => message.speaker === "candidate").length);
+  const isAnchorQuestionAnswer = answerRound <= 1;
+  const knowledgeFeedback = isAnchorQuestionAnswer
+    ? evaluateAnswerAgainstQuestion(answer, questionMeta)
+    : createDynamicKnowledgeFeedback(answer, llmResponse, questionMeta.topic);
+  const adjustedScore = isAnchorQuestionAnswer
+    ? calculateCoverageAdjustedScore({
+        answer,
+        knowledgeFeedback,
+        llmScore: llmResponse.score,
+        questionMeta,
+      })
+    : calculateDynamicAnswerScore(answer, llmResponse.score);
   const feedbackSummary = createCandidateFeedbackSummary({
     answer,
     knowledgeFeedback,
@@ -318,15 +328,17 @@ function buildBankNextResponse({
     questionMeta,
     score: adjustedScore.score,
   });
-  const nextQuestion = nextAllowed
-    ? pickBankNextQuestion({
-        answer,
-        fallbackQuestion: llmResponse.nextQuestion,
-        history,
-        questionMeta,
-      })
-    : "";
-  const interviewerFeedback = createNaturalInterviewerFeedback(answer, knowledgeFeedback, adjustedScore.score);
+  const plannedTurn = planInterviewTurn({
+    answer,
+    history,
+    knowledgeFeedback,
+    llmNextQuestion: llmResponse.nextQuestion,
+    questionMeta,
+    reachedMaxRounds,
+  });
+  const nextQuestion = nextAllowed ? plannedTurn.nextQuestion : "";
+  const interviewerFeedback =
+    plannedTurn.interviewerFeedback || createNaturalInterviewerFeedback(answer, knowledgeFeedback, adjustedScore.score);
   const interviewerReply = sanitizeInterviewerReply(
     composeInterviewerReply(interviewerFeedback, nextQuestion, reachedMaxRounds),
     nextQuestion,
@@ -429,6 +441,133 @@ function createCandidateFeedbackSummary({
   }
 
   return "这轮回答已经有起点，但还缺少足够的技术细节和项目语境。建议把概念解释、实际处理过程和最终结果说得更完整。";
+}
+
+function createDynamicKnowledgeFeedback(
+  answer: string,
+  llmResponse: NextInterviewResponse,
+  topic: string,
+): KnowledgeFeedback {
+  const coveredPoints = sanitizeList(llmResponse.coveredPoints);
+  const missingPoints = sanitizeList(llmResponse.missingPoints);
+  const improvementTips = sanitizeList(llmResponse.improvementTips);
+
+  if (coveredPoints.length > 0 || missingPoints.length > 0 || improvementTips.length > 0) {
+    return {
+      coveredPoints,
+      missingPoints,
+      improvementTips: improvementTips.length > 0
+        ? improvementTips
+        : createDynamicImprovementTips(answer, topic, missingPoints),
+    };
+  }
+
+  if (isHttpNetworkTopic(topic) || isCorsAnswer(answer)) {
+    return createHttpNetworkFeedback(answer);
+  }
+
+  return createGenericDynamicFeedback(answer, topic);
+}
+
+function calculateDynamicAnswerScore(
+  answer: string,
+  llmScore: number,
+): { score: number; scoringReason: string } {
+  const normalizedLlmScore = normalizeScore(llmScore);
+  const answerLength = answer.trim().length;
+  const concreteBonus = hasDynamicConcreteEvidence(answer) ? 8 : 0;
+  const depthBonus = answerLength >= 180 ? 8 : answerLength >= 100 ? 4 : 0;
+  const shortPenalty = answerLength < 60 ? 10 : 0;
+  const score = Math.min(96, Math.max(40, Math.round(normalizedLlmScore * 0.55 + 28 + concreteBonus + depthBonus - shortPenalty)));
+
+  return {
+    score,
+    scoringReason: sanitizeScoringReason(undefined, score),
+  };
+}
+
+function createHttpNetworkFeedback(answer: string): KnowledgeFeedback {
+  const coveredPoints = collectPointMatches(answer, [
+    ["能解释 CORS 与浏览器同源策略的关系", /cors|同源|跨域/i],
+    ["能说明 OPTIONS 预检和非简单请求触发条件", /options|预检|put|delete|application\/json|自定义|token|headers?/i],
+    ["能区分预检响应和真实请求响应的 CORS 头", /真实|GET|接口响应|响应头|Allow-Origin|origin/i],
+    ["能考虑 Credentials、Cookie 与通配符 Origin 的约束", /credentials|cookie|凭证|\*/i],
+    ["能检查 Allow-Headers、Methods 等服务端配置", /allow-headers|headers|methods|method/i],
+    ["能考虑网关、异常处理器或 OPTIONS 被拦截", /网关|异常|拦截|统一返回/i],
+    ["能注意预检缓存 Max-Age 或旧规则影响", /max-age|缓存/i],
+  ]);
+
+  const missingPoints = collectMissingPoints(coveredPoints, [
+    "可以补充真实请求失败时是否也返回 CORS 响应头",
+    "可以说明带凭证请求不能使用通配符 Origin",
+    "可以补充网关、反向代理和异常响应的统一配置",
+  ]).slice(0, Math.max(0, 3 - Math.floor(coveredPoints.length / 2)));
+
+  return {
+    coveredPoints,
+    missingPoints,
+    improvementTips: createDynamicImprovementTips(answer, "HTTP / Network", missingPoints),
+  };
+}
+
+function createGenericDynamicFeedback(answer: string, topic: string): KnowledgeFeedback {
+  const coveredPoints = hasDynamicConcreteEvidence(answer)
+    ? [`能结合 ${topic} 的实际场景说明处理思路`]
+    : [`能围绕 ${topic} 给出基本回答方向`];
+  const missingPoints = answer.trim().length >= 120
+    ? ["可以补充更明确的结果指标或线上验证方式"]
+    : ["可以补充更具体的项目场景、关键步骤和结果"];
+
+  return {
+    coveredPoints,
+    missingPoints,
+    improvementTips: createDynamicImprovementTips(answer, topic, missingPoints),
+  };
+}
+
+function createDynamicImprovementTips(answer: string, topic: string, missingPoints: string[]): string[] {
+  if (missingPoints.length === 0) {
+    return [`这轮 ${topic} 回答已经比较完整，可以再补充一个真实线上问题的排查闭环。`];
+  }
+
+  return [
+    missingPoints[0],
+    "回答结尾可以补一句你如何在生产环境验证这个方案。",
+  ];
+}
+
+function sanitizeList(items?: string[]): string[] {
+  return (items ?? [])
+    .map((item) => stripInternalText(stripEndInterviewPhrases(String(item))).trim())
+    .filter((item) => item && !containsInternalText(item))
+    .slice(0, 5);
+}
+
+function collectPointMatches(answer: string, specs: Array<[string, RegExp]>): string[] {
+  return specs.filter(([, pattern]) => pattern.test(answer)).map(([point]) => point);
+}
+
+function collectMissingPoints(coveredPoints: string[], candidates: string[]): string[] {
+  return candidates.filter((candidate) =>
+    !coveredPoints.some((point) => normalizeForLocalMatch(point).includes(normalizeForLocalMatch(candidate).slice(0, 8))),
+  );
+}
+
+function isHttpNetworkTopic(topic: string): boolean {
+  const normalizedTopic = topic.toLowerCase();
+  return normalizedTopic.includes("http") || normalizedTopic.includes("network");
+}
+
+function isCorsAnswer(answer: string): boolean {
+  return /cors|跨域|同源|options|allow-origin|credentials|allow-headers/i.test(answer);
+}
+
+function hasDynamicConcreteEvidence(answer: string): boolean {
+  return /项目|线上|生产|网关|异常|指标|数据|灰度|回滚|排查|抓包|network|devtools|options|tenant|namespace|partition|collection|\d+%|\d+\s*ms/i.test(answer);
+}
+
+function normalizeForLocalMatch(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, "");
 }
 
 function createNaturalInterviewerFeedback(

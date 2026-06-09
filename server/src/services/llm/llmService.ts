@@ -14,9 +14,10 @@ import type { LlmProvider } from "./providers/types.js";
 
 export async function generateOpeningAndFirstQuestion(
   role: InterviewRole,
+  topic?: string,
 ): Promise<StartInterviewResponse> {
   return withFallback("start", (provider) =>
-    provider.generateOpeningAndFirstQuestion(role),
+    provider.generateOpeningAndFirstQuestion(role, topic),
   );
 }
 

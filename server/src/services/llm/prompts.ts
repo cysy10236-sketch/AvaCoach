@@ -38,12 +38,22 @@ const baseInterviewerInstruction = `
 - 候选人要求换题时，换一个相关但更基础的问题，不要结束。
 `.trim();
 
-export function buildStartPrompt(role: InterviewRole): string {
+export function buildStartPrompt(role: InterviewRole, topic?: string): string {
+  const topicInstruction = topic?.trim()
+    ? `
+Interview topic guidance:
+- 本轮练习优先从「${topic.trim()}」方向开始。
+- 这只是面试方向，不是固定题库脚本；不要提到题号、expectedPoints 或知识点覆盖统计。
+- 第一题要像真实中文 IT 面试官提问，聚焦该 topic 的核心理解或工程实践。
+`.trim()
+    : "";
+
   return `
 ${baseInterviewerInstruction}
 
 Task:
 为 ${roleLabels[role]} 开始一轮模拟面试。请用自然中文开场，并提出第一道问题。
+${topicInstruction}
 
 Return JSON:
 {
@@ -153,8 +163,11 @@ ${context.questionMeta.expectedPoints.map((point) => `  - ${point}`).join("\n")}
 ${(context.questionMeta.followUps ?? []).map((point) => `  - ${point}`).join("\n")}
 
 题库模式要求：
+- 题库题目主要用于第一题开局和本轮评分，不要把题库 followUps 当成固定脚本。
 - expectedPoints 只用于判断覆盖和缺失，不要在 interviewerReply 中机械复述。
-- followUps 只能作为 nextQuestion 参考，不要和另一个问题同时出现。
+- nextQuestion 要优先根据候选人的真实回答临场生成：回答完整时深入工程取舍或线上场景，回答不足时降低难度或换角度。
+- followUps 只能作为弱参考，不要机械照搬，也不要和另一个问题同时出现。
+- 不要重复历史里已经问过的问题。
 - 未达到最大轮次时，不允许随意结束面试。
 `.trim();
 }

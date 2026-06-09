@@ -78,9 +78,12 @@ const reportSchema = {
 };
 
 export const openaiProvider: LlmProvider = {
-  async generateOpeningAndFirstQuestion(role: InterviewRole): Promise<StartInterviewResponse> {
+  async generateOpeningAndFirstQuestion(
+    role: InterviewRole,
+    topic?: string,
+  ): Promise<StartInterviewResponse> {
     const data = await requestJson<StartInterviewResponse>(
-      buildStartPrompt(role),
+      buildStartPrompt(role, topic),
       "avacoach_start_interview",
       startSchema,
     );

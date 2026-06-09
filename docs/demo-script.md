@@ -10,143 +10,70 @@ npm run dev
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:3001`
 
-如果现场只出现 AvatarKit WASM / chunk size warning，可以说明这是已知非阻塞 warning，build 通过且 demo 可运行。
+如果出现 AvatarKit WASM / chunk size warning，可以说明这是已知非阻塞 warning，`npm run build` 通过即可。
 
-> **演示前建议先跑一遍冒烟测试**：`node scripts/smoke-demo-flow.mjs`（需要后端已启动）。确认 44 项 core flow 全部 PASS 后再开始演示。
+## 1-2 分钟项目介绍
 
----
+AvaCoach 是一个中文 AI 数字人模拟面试训练系统。它不是普通聊天机器人，而是把 LLM、数字人 Avatar、TTS、ASR 和面试反馈组合成一条完整链路：LLM 生成问题，火山 TTS 生成中文语音，Spatius AvatarKit 驱动数字人口型，候选人语音回答通过火山 ASR 转文字，再由 LLM 评估回答并生成追问、评分依据和最终报告。
 
-## 演示模式选择
+## 标准演示顺序
 
-根据现场是否有外部服务 Key 和额度，选择以下两种模式之一：
+1. 打开页面，介绍三栏 SaaS 工作台。
+2. 点击 `Connect Avatar`。
+3. 等待 Avatar Connected。
+4. 可点击 `Send Sample Audio`，说明这是官方 PCM 验证音频，只用于验证 SDK lip-sync。
+5. 选择岗位和 Topic，例如 `AI Engineer` + `Vector Database`。
+6. 点击 `Start Interview`。
+7. 说明：当前第一题由 LLM 根据岗位和 Topic 生成，不再机械使用固定题库。
+8. 等数字人播报完问题。
+9. 点击开始语音回答，口述一段中文回答。
+10. 停止录音，展示 ASR transcript 回填。
+11. 手动微调回答，强调用户确认后才提交。
+12. 点击 `Submit Answer`。
+13. 展示右侧综合评价、评分依据和改进建议。
+14. 展示 Ava 根据回答自然追问，而不是固定下一题。
+15. 完成多轮后点击 `End Interview`。
+16. 展示 Final Report。
+17. 最后说明 fallback：任一外部 provider 失败，文字面试主流程仍然可用。
 
-### Safe Fallback Mode（无 Key / 无额度，推荐面试官首次试用）
+## 如何解释题库
 
-无需 Spatius、Volcano TTS、Volcano ASR 或 LLM API Key。Avatar 区显示 placeholder，面试流程完全通过文字交互完成。
+可以这样说：
 
-**1-2 分钟快速演示**：
+> 早期版本把题库直接暴露在 UI 里，每轮都展示覆盖点和缺失点。这样便于验证评分，但实际面试体验会显得机械。所以现在主流程改成 LLM 动态面试，题库保留为底层结构化知识资产。它仍然有大约 110 道中文 IT 题和 expectedPoints，可以用于未来 evaluator、企业 JD 题库和离线测试，但不再干扰当前 demo 的自然对话体验。
 
-1. 打开页面，说明 AvaCoach 是中文 IT 数字人模拟面试训练系统。
-2. 指着 Avatar 区 placeholder："Spatius 数字人额度现在不启用，但核心面试流程完全不受影响。"
-3. 选择 IT 题库 / Frontend / React / 中等。
-4. 点击 Start Interview → 面试官问题出现在对话区。
-5. 在回答框输入一段回答（可使用下方推荐回答）。
-6. 点击 Submit Answer → 右侧展示 score、coveredPoints、missingPoints、improvementTips、scoringReason。
-7. 第二轮输入"我不会，可以换一道吗？" → Ava 自然换题，不结束。
-8. 第三轮提交后系统提示生成报告。
-9. 点击 End Interview → 展示 Final Report。
-10. 强调："题库、评分和报告完全不依赖外部 API Key，clone 后即可跑通。"
+## 如何解释 Spatius
 
-### Full Demo Mode（有完整 Key 和额度）
+可以这样说：
 
-需要 Spatius API Key + App ID + Avatar ID + 可用额度，以及 Volcano TTS/ASR 和 LLM Key。
+> Spatius 负责 avatar rendering 和 lip-sync，不负责生成问题。问题和反馈来自 LLM，声音来自 Volcano TTS，AvatarKit 接收 16k PCM 后驱动数字人的口型。
 
-**2-4 分钟完整演示**：
+## 如何解释 fallback
 
-1. 打开页面，介绍 AvaCoach 是中文 IT 数字人模拟面试训练系统。
-2. 说明 Spatius 是 avatar rendering / lip-sync layer，不是 LLM，也不是 TTS。
-3. 点击 Connect Avatar，等待 Avatar Connected。
-4. 点击 Send Sample Audio，说明这是官方 SDK 验证音频，用来证明 AvatarKit `controller.send()` 能驱动口型。
-5. 选择 IT 题库 / Frontend / React / 中等。
-6. 点击 Start Interview。
-7. 展示数字人用中文提问和口型同步。
-8. 说明当前面试官回复来自 LLM 或题库逻辑，语音来自 Volcano TTS，口型由 Spatius AvatarKit 驱动。
-9. 点击开始语音回答，说一段中文回答。
-10. 展示 Volcano Streaming ASR partial / final transcript 实时回填到回答框。
-11. 手动编辑回答，说明系统不会自动提交，候选人始终有确认权。
-12. 点击 Submit Answer。
-13. 展示右侧 score、coveredPoints、missingPoints、improvementTips、scoringReason。
-14. 第二轮可以演示：“我不会，可以换一道吗？”
-15. Ava 会温和换一个相关问题或降低角度，不会强行结束。
-16. 也可以演示候选人问薪资/福利，Ava 会简短回应并拉回技术面试。
-17. 完成三轮后，系统提示生成最终报告。
-18. 点击 End Interview，展示 Final Report。
-19. 说明 ended 后不会继续生成新问题，只能查看报告或 Reset Demo。
-20. 点击 Reset Demo，展示状态清空。
+可以这样说：
 
-## 面试官讲解话术
+> Fallback 是为了保证现场演示稳定。比如 Avatar 额度不够时可以显示 placeholder，TTS 失败时仍显示文字，ASR 失败时仍可手动输入，LLM 失败时走 mock provider。核心面试闭环不会因为单个外部服务失败而崩掉。
 
-可以这样介绍：
+## 推荐测试回答
 
-> AvaCoach 不是一个简单聊天机器人，而是一个完整中文 IT 面试训练闭环。前端负责数字人、对话、ASR 录音和反馈展示；后端负责 LLM、TTS、ASR proxy、Spatius Session Token、题库评分和面试状态机。所有敏感 key 都只在后端。
+Vector Database:
 
-可以这样解释 Spatius：
+> 向量数据库相比普通数据库存数组，核心价值在于高维相似度检索和工程化能力。它通常会内置 ANN 索引，比如 HNSW 或 IVF，避免全量暴力计算；也支持 metadata filter 和向量相似度组合查询，适合 RAG 场景。同时它会考虑向量压缩、分片、增量索引和多租户隔离，这些都是普通数据库自己存数组时需要额外实现的。
 
-> Spatius 在这里负责数字人渲染和口型同步。LLM 负责生成问题和反馈，Volcano TTS 负责生成 16k PCM 音频，AvatarKit 接收 PCM 后驱动数字人的嘴型。
+HTTP / Network:
 
-可以这样解释状态机：
+> CORS 是浏览器同源策略下的跨域访问控制机制。预检请求一般在非简单请求时触发，比如 PUT、DELETE、application/json 或自定义 Header。排查时我会先看 OPTIONS 是否返回正确，再对比真实请求是否也带 Access-Control-Allow-Origin、Allow-Credentials、Allow-Headers，同时检查网关、异常响应和缓存配置。
 
-> 最新一轮修复后，面试状态由后端 session 控制。三轮后后端会返回 ended、nextAllowed=false、reportReady=true。即使前端再次提交，后端也不会再生成下一题。
+## 面试官可能追问
 
-可以这样解释评分：
+**为什么不用题库固定问？**
 
-> 题库模式不是只让模型主观打分。每道题都有 expectedPoints，系统会判断回答覆盖了哪些点、缺了哪些点，再用 scoringReason 解释分数来源。
+因为真实面试不是背题。题库适合作为结构化知识资产和评测参考，但现场互动更需要根据候选人的回答动态推进。当前版本把题库保留在底层，主流程用 LLM 做自然追问。
 
-## 推荐演示回答
+**项目高级性体现在哪里？**
 
-### Full Demo Mode 推荐回答
+不是单点接 API，而是完整 provider 架构：LLM、TTS、ASR、Avatar、Token、安全边界、fallback、状态机和报告都拆开了。任何一层替换或失败，都不会拖垮整个 demo。
 
-Frontend / React / medium:
+**下一步怎么增强？**
 
-> 我在一个后台系统里做过 React 性能优化。当时列表页有大量筛选条件和表格渲染，首屏和交互都有卡顿。我先用 React Profiler 和浏览器 Performance 定位重渲染来源，然后把表格行组件拆分，用 memo 控制重复渲染，把筛选计算放到 useMemo，并对接口结果做分页和缓存。上线后首屏耗时大概降低了 30%，用户操作卡顿明显减少。
-
-换题演示：
-
-> 这个点我不太熟，可以换一道相关但更基础的题吗？
-
-薪资/流程演示：
-
-> 这个岗位薪资和福利怎么样？
-
-## 重点展示点
-
-- 真实 Avatar 可连接。
-- 官方 sample PCM 可验证 SDK。
-- Volcano TTS 可驱动 Avatar lip-sync。
-- Volcano Streaming ASR 可实时回填回答。
-- Submit Answer 后只生成一个自然追问。
-- ended 后不会继续追问。
-- 评分是 0-100，并有 expectedPoints 解释。
-- fallback 保证 demo 稳定。
-
-## Fallback 解释
-
-如果现场某个外部服务不可用：
-
-- AvatarKit 不可用：使用 placeholder / text mode。
-- TTS 不可用：browser speech 或 silent text mode。
-- ASR 不可用：browser ASR 或手动输入。
-- LLM 不可用：mock provider。
-- Spatius token 不可用：fallback demo still usable。
-
-核心话术：
-
-> Fallback 是为了保证演示稳定性。即使某个外部 provider 失败，完整面试流程仍然可以展示。
-
-### Safe Fallback Mode 推荐回答
-
-Frontend / React / medium（文字版，不依赖语音）：
-
-> Context 适合全局状态共享，比如主题、用户认证信息等跨组件传递的场景。但频繁更新会导致所有消费者重渲染。我在项目里的做法是把不同关注点的状态拆分到独立 Context 中，然后用 useMemo 缓存 Context value，配合 React.memo 减少不必要的渲染。
-
-换题演示（Safe Fallback）：
-
-> 这个知识点我不太熟，可以换一道吗？
-
-薪资/流程演示（Safe Fallback）：
-
-> 这个岗位的薪资范围大概是多少？
-
-### Safe Fallback 演示话术
-
-可以这样介绍 Avatar placeholder：
-
-> 当前 Avatar 区显示的是 placeholder 状态，因为 Spatius 数字人额度有限。但这也说明了一个设计原则：核心面试流程——题库、评分、反馈和报告——不依赖任何单一外部 provider。
-
-可以这样介绍 mock LLM：
-
-> 现在用的是 mock LLM provider，它返回预设的中文反馈和评分。如果配置了 DeepSeek 或 OpenAI 的 Key，同样的代码会走真实 LLM，生成更个性化的追问和综合评价。
-
-可以这样总结：
-
-> 这个项目从架构上把 Avatar、TTS、ASR、LLM 都做成了可替换的 provider。即使你 clone 后没有任何外部 Key，也可以完整看到题库、问答、评分和报告的闭环。
+把题库升级成 evaluator/rubric 层，让 LLM 的自然反馈和题库的结构化评测做校准；再加入用户历史、练习计划和 JD 定制题库。
